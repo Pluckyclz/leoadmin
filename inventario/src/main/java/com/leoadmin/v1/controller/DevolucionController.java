@@ -2,10 +2,12 @@ package com.leoadmin.v1.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.leoadmin.v1.dto.DevolucionRequest;
 import com.leoadmin.v1.service.DevolucionService;
 
+@CrossOrigin(origins = "*")
 @RestController
 public class DevolucionController {
 
