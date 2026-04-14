@@ -2,12 +2,10 @@ package com.leoadmin.v1.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.leoadmin.v1.dto.AjusteInventarioRequest;
 import com.leoadmin.v1.service.AjusteInventarioService;
 
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 public class AjusteInventarioController {
 

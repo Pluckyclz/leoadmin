@@ -1,7 +1,6 @@
 package com.leoadmin.v1.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -9,7 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.leoadmin.v1.dto.EntradaInventarioRequest;
 import com.leoadmin.v1.service.EntradaInventarioService;
 
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 public class EntradaInventarioController {
 

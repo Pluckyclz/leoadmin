@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,7 +14,6 @@ import com.leoadmin.v1.dto.CorteResponse;
 import com.leoadmin.v1.entity.Venta;
 import com.leoadmin.v1.repository.VentaRepository;
 
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 public class CorteController {
 

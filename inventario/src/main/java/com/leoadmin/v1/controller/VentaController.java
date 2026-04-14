@@ -4,13 +4,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.leoadmin.v1.dto.VentaRequest;
 import com.leoadmin.v1.dto.VentaResponse;
 import com.leoadmin.v1.service.VentaService;
 
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 public class VentaController {
 
