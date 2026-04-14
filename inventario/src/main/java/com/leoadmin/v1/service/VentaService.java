@@ -10,17 +10,16 @@ import com.leoadmin.v1.dto.DetalleVentaRequest;
 import com.leoadmin.v1.dto.VentaRequest;
 import com.leoadmin.v1.dto.VentaResponse;
 import com.leoadmin.v1.entity.DetalleVenta;
-import com.leoadmin.v1.entity.Inventario;
 import com.leoadmin.v1.entity.MovimientoInventario;
 import com.leoadmin.v1.entity.Producto;
+import com.leoadmin.v1.entity.Usuario;
 import com.leoadmin.v1.entity.Venta;
 import com.leoadmin.v1.repository.DetalleVentaRepository;
 import com.leoadmin.v1.repository.InventarioRepository;
 import com.leoadmin.v1.repository.MovimientoInventarioRepository;
 import com.leoadmin.v1.repository.ProductoRepository;
-import com.leoadmin.v1.repository.VentaRepository;
-import com.leoadmin.v1.entity.Usuario;
 import com.leoadmin.v1.repository.UsuarioRepository;
+import com.leoadmin.v1.repository.VentaRepository;
 
 @Service
 public class VentaService {
@@ -39,6 +38,7 @@ public class VentaService {
             InventarioRepository inventarioRepository,
             MovimientoInventarioRepository movimientoInventarioRepository,
             UsuarioRepository usuarioRepository) {
+
         this.ventaRepository = ventaRepository;
         this.detalleVentaRepository = detalleVentaRepository;
         this.productoRepository = productoRepository;
@@ -52,19 +52,13 @@ public class VentaService {
 
         VentaResponse error = new VentaResponse();
 
-        Usuario usuario = usuarioRepository
-                .findByNumeroEmpleado(request.getNumeroEmpleado())
-                .orElse(null);
-
-        if (usuario == null) {
-            error = new VentaResponse();
-            error.setMensaje("Empleado no válido");
+        if (request.getSucursalId() == null) {
+            error.setMensaje("La sucursal es obligatoria");
             return error;
         }
 
-        if (!usuario.getActivo()) {
-            error = new VentaResponse();
-            error.setMensaje("Empleado inactivo");
+        if (request.getNumeroEmpleado() == null || request.getNumeroEmpleado().isBlank()) {
+            error.setMensaje("El número de empleado es obligatorio");
             return error;
         }
 
@@ -73,8 +67,21 @@ public class VentaService {
             return error;
         }
 
+        Usuario usuario = usuarioRepository
+                .findByNumeroEmpleado(request.getNumeroEmpleado())
+                .orElse(null);
+
+        if (usuario == null) {
+            error.setMensaje("Empleado no válido");
+            return error;
+        }
+
+        if (!Boolean.TRUE.equals(usuario.getActivo())) {
+            error.setMensaje("Empleado inactivo");
+            return error;
+        }
+
         if (!usuario.getSucursalId().equals(request.getSucursalId())) {
-            error = new VentaResponse();
             error.setMensaje("El empleado no pertenece a la sucursal indicada");
             return error;
         }
@@ -102,16 +109,15 @@ public class VentaService {
                 return error;
             }
 
-            Inventario inventario = inventarioRepository
-                    .findByProductoIdAndSucursalId(producto.getId(), request.getSucursalId())
-                    .orElse(null);
+            var inventarioOpt = inventarioRepository
+                    .findByProductoIdAndSucursalId(producto.getId(), request.getSucursalId());
 
-            if (inventario == null) {
+            if (inventarioOpt.isEmpty()) {
                 error.setMensaje("Inventario no encontrado para el producto: " + item.getCodigoBarras());
                 return error;
             }
 
-            if (inventario.getCantidad() < item.getCantidad()) {
+            if (inventarioOpt.get().getCantidad() < item.getCantidad()) {
                 error.setMensaje("Stock insuficiente para el producto: " + item.getCodigoBarras());
                 return error;
             }
@@ -147,9 +153,9 @@ public class VentaService {
                     .findByCodigoBarras(item.getCodigoBarras())
                     .orElse(null);
 
-            Inventario inventario = inventarioRepository
-                    .findByProductoIdAndSucursalId(producto.getId(), request.getSucursalId())
-                    .orElse(null);
+            if (producto == null) {
+                throw new RuntimeException("Producto no encontrado durante el guardado: " + item.getCodigoBarras());
+            }
 
             BigDecimal precioUnitario;
 
@@ -164,6 +170,16 @@ public class VentaService {
             BigDecimal subtotal = precioUnitario
                     .multiply(BigDecimal.valueOf(item.getCantidad()));
 
+            int filasActualizadas = inventarioRepository.descontarStock(
+                    producto.getId(),
+                    request.getSucursalId(),
+                    item.getCantidad());
+
+            if (filasActualizadas == 0) {
+                throw new RuntimeException(
+                        "Stock insuficiente o inventario modificado simultáneamente para: " + item.getCodigoBarras());
+            }
+
             DetalleVenta detalle = new DetalleVenta();
             detalle.setVentaId(ventaGuardada.getId());
             detalle.setProductoId(producto.getId());
@@ -171,9 +187,6 @@ public class VentaService {
             detalle.setPrecioUnitario(precioUnitario);
             detalle.setSubtotal(subtotal);
             detalleVentaRepository.save(detalle);
-
-            inventario.setCantidad(inventario.getCantidad() - item.getCantidad());
-            inventarioRepository.save(inventario);
 
             MovimientoInventario movimiento = new MovimientoInventario();
             movimiento.setProductoId(producto.getId());

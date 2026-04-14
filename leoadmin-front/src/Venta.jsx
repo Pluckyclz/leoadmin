@@ -9,6 +9,7 @@ function Venta() {
     const [carrito, setCarrito] = useState([]);
     const [mensaje, setMensaje] = useState("");
     const [tipoVenta, setTipoVenta] = useState("publico");
+    const [vendiendo, setVendiendo] = useState(false);
 
     const inputCodigoRef = useRef(null);
 
@@ -106,13 +107,18 @@ function Venta() {
     };
 
     const registrarVenta = async () => {
+        if (vendiendo) return;
+        setVendiendo(true);
+
         if (!numeroEmpleado.trim()) {
             setMensaje("El número de empleado es obligatorio");
+            setVendiendo(false);
             return;
         }
 
         if (carrito.length === 0) {
             setMensaje("No hay productos en el carrito");
+            setVendiendo(false);
             return;
         }
 
@@ -148,13 +154,11 @@ function Venta() {
             setNumeroEmpleado("");
             setMostrarConfirmacion(false);
             inputCodigoRef.current?.focus();
-
-            if (inputCodigoRef.current) {
-                inputCodigoRef.current.focus();
-            }
         } catch (error) {
             console.error(error);
             setMensaje("Error al conectar con el backend");
+        } finally {
+            setVendiendo(false);
         }
     };
 
@@ -281,8 +285,17 @@ function Venta() {
                                 style={inputStyle}
                             />
 
-                            <button onClick={registrarVenta} style={inputStyle}>
-                                Confirmar
+                            <button
+                                onClick={registrarVenta}
+                                disabled={vendiendo}
+                                style={{
+                                    ...buttonStyle,
+                                    opacity: vendiendo ? 0.7 : 1,
+                                    cursor: vendiendo ? "not-allowed" : "pointer",
+                                    marginRight: "10px"
+                                }}
+                            >
+                                {vendiendo ? "Procesando..." : "Confirmar"}
                             </button>
 
                             <button
