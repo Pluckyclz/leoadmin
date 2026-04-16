@@ -6,6 +6,7 @@ function TituloPantalla({ pantalla }) {
     ajuste: "Ajuste de inventario",
     devolucion: "Devolución",
     corte: "Corte",
+    empleados: "Empleados",
   };
 
   return <h2>{titulos[pantalla] || "Leoadmin"}</h2>;

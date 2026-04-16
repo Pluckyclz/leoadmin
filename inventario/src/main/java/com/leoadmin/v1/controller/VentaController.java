@@ -1,15 +1,16 @@
 package com.leoadmin.v1.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.leoadmin.v1.dto.VentaRequest;
 import com.leoadmin.v1.dto.VentaResponse;
 import com.leoadmin.v1.service.VentaService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
+@RequestMapping("/ventas")
 public class VentaController {
 
     private final VentaService ventaService;
@@ -18,14 +19,12 @@ public class VentaController {
         this.ventaService = ventaService;
     }
 
-    @PostMapping("/ventas")
-    public ResponseEntity<VentaResponse> registrarVenta(@RequestBody VentaRequest request) {
+    @PostMapping
+    public ResponseEntity<VentaResponse> registrarVenta(
+            @RequestBody VentaRequest request,
+            HttpServletRequest httpRequest) {
 
-        if (request.getSucursalId() == null) {
-            return respuestaError("La sucursal es obligatoria");
-        }
-
-        if (request.getNumeroEmpleado() == null || request.getNumeroEmpleado().isBlank()) {
+        if (request.getNumeroEmpleado() == null) {
             return respuestaError("El número de empleado es obligatorio");
         }
 
@@ -33,7 +32,7 @@ public class VentaController {
             return respuestaError("La venta debe incluir al menos un producto");
         }
 
-        VentaResponse resultado = ventaService.procesarVenta(request);
+        VentaResponse resultado = ventaService.procesarVenta(request, httpRequest);
 
         if (!"Venta registrada correctamente".equals(resultado.getMensaje())) {
             return ResponseEntity.badRequest().body(resultado);

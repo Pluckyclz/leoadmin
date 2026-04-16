@@ -7,6 +7,7 @@ import Devolucion from "./Devolucion";
 import Corte from "./Corte";
 import Menu from "./Menu";
 import TituloPantalla from "./TituloPantalla";
+import EmpleadosPage from "./EmpleadosPage";
 
 function App() {
   const [pantalla, setPantalla] = useState("venta");
@@ -38,6 +39,7 @@ function App() {
         {pantalla === "ajuste" && <AjusteInventario />}
         {pantalla === "devolucion" && <Devolucion />}
         {pantalla === "corte" && <Corte />}
+        {pantalla === "empleados" && <EmpleadosPage />}
       </div>
     </div>
   );

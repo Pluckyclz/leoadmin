@@ -25,25 +25,32 @@ public class CorteController {
         this.ventaRepository = ventaRepository;
     }
 
-    @GetMapping("/corte/sucursal/{sucursalId}")
-    public CorteResponse corteDelDia(@PathVariable Integer sucursalId) {
+    @GetMapping("/corte/local/{localId}")
+    public CorteResponse corteDelDia(@PathVariable Integer localId) {
 
         LocalDate hoy = LocalDate.now();
         LocalDateTime inicio = hoy.atStartOfDay();
         LocalDateTime fin = hoy.atTime(LocalTime.MAX);
 
-        List<Venta> ventas = ventaRepository.findBySucursalIdAndFechaHoraBetween(sucursalId, inicio, fin);
+        List<Venta> ventas = ventaRepository.findByLocalIdAndFechaHoraBetween(localId, inicio, fin);
 
         BigDecimal total = BigDecimal.ZERO;
+        int totalVentas = 0;
 
         for (Venta venta : ventas) {
             total = total.add(venta.getTotal());
+
+            if ("venta".equalsIgnoreCase(venta.getTipoOperacion())) {
+                totalVentas++;
+            } else if ("devolucion".equalsIgnoreCase(venta.getTipoOperacion())) {
+                totalVentas--;
+            }
         }
 
         CorteResponse response = new CorteResponse();
-        response.setSucursalId(sucursalId);
+        response.setSucursalId(localId); // puedes renombrar después
         response.setFecha(hoy);
-        response.setTotalVentas(ventas.size());
+        response.setTotalVentas(Math.max(totalVentas, 0));
         response.setTotalImporte(total);
 
         return response;

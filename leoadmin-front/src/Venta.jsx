@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { API_URL } from "./config";
-import { inputStyle, buttonStyle, cardStyle } from "./styles";
+import { inputStyle, buttonStyle } from "./styles";
 
 function Venta() {
     const [numeroEmpleado, setNumeroEmpleado] = useState("");
@@ -17,7 +17,6 @@ function Venta() {
         if (!codigoBarras.trim()) return;
 
         try {
-            // 1. Obtener producto
             const respProducto = await fetch(
                 `${API_URL}/productos/codigo/${codigoBarras}`
             );
@@ -28,7 +27,6 @@ function Venta() {
                 return;
             }
 
-            // 2. Consultar inventario
             const respInventario = await fetch(
                 `${API_URL}/inventario/sucursal/1/filtro?marca=${producto.marcaCelular}&modelo=${producto.modeloCelular}`
             );
@@ -44,7 +42,6 @@ function Venta() {
                 return;
             }
 
-            // 3. Agregar al carrito
             const existente = carrito.find(
                 (item) => item.codigoBarras === producto.codigoBarras
             );
@@ -101,9 +98,7 @@ function Venta() {
             setCarrito(nuevoCarrito);
         }
 
-        if (inputCodigoRef.current) {
-            inputCodigoRef.current.focus();
-        }
+        inputCodigoRef.current?.focus();
     };
 
     const registrarVenta = async () => {
@@ -123,8 +118,7 @@ function Venta() {
         }
 
         const body = {
-            sucursalId: 1,
-            numeroEmpleado: numeroEmpleado,
+            numeroEmpleado: Number(numeroEmpleado),
             tipoVenta: tipoVenta,
             productos: carrito.map((item) => ({
                 codigoBarras: item.codigoBarras,
@@ -179,112 +173,148 @@ function Venta() {
 
     return (
         <div style={{ padding: "20px", fontFamily: "Arial" }}>
+            <div style={topSection}>
+                <div style={fieldBlock}>
+                    <label style={labelStyle}>Código de barras:</label>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                        <input
+                            ref={inputCodigoRef}
+                            type="text"
+                            value={codigoBarras}
+                            onChange={(e) => {
+                                setCodigoBarras(e.target.value);
+                                setMensaje("");
+                            }}
+                            onKeyDown={manejarEnterCodigo}
+                            style={{ ...inputStyle, marginBottom: 0, flex: 1 }}
+                        />
+                        <button onClick={agregarProducto} style={buttonStyle}>
+                            Agregar
+                        </button>
+                    </div>
+                </div>
 
-            <div style={{ marginBottom: "20px" }}>
-                <label>Código de barras:</label>
-                <br />
-                <input
-                    ref={inputCodigoRef}
-                    type="text"
-                    value={codigoBarras}
-                    onChange={(e) => {
-                        setCodigoBarras(e.target.value);
-                        setMensaje("");
-                    }}
-                    onKeyDown={manejarEnterCodigo}
-                    style={inputStyle}
-                />
-                <button
-                    onClick={agregarProducto}
-                    style={buttonStyle}
-                >
-                    Agregar
-                </button>
-            </div>
-            <div style={{ marginBottom: "20px" }}>
-                <label>Tipo de venta:</label>
-                <br />
-                <select
-                    value={tipoVenta}
-                    onChange={(e) => setTipoVenta(e.target.value)}
-                    style={{ width: "200px", padding: "8px", marginTop: "5px" }}
-                >
-                    <option value="publico">Público</option>
-                    <option value="especial">Locatario</option>
-                </select>
+                <div style={fieldBlockSmall}>
+                    <label style={labelStyle}>Tipo de venta:</label>
+                    <select
+                        value={tipoVenta}
+                        onChange={(e) => setTipoVenta(e.target.value)}
+                        style={selectStyle}
+                    >
+                        <option value="publico">Público</option>
+                        <option value="especial">Locatario</option>
+                    </select>
+                </div>
             </div>
 
             {mensaje && (
-                <p style={{
-                    color: mensaje.includes("OK") ? "green" : "red",
-                    fontWeight: "bold"
-                }}>
+                <p
+                    style={{
+                        color: mensaje.includes("OK") ? "green" : "red",
+                        fontWeight: "bold",
+                        marginBottom: "15px",
+                    }}
+                >
                     {mensaje}
                 </p>
             )}
 
-            <h2>Carrito</h2>
+            <h2 style={{ marginBottom: "15px" }}>Carrito</h2>
 
-            {carrito.length === 0 ? (
-                <p>No hay productos agregados</p>
-            ) : (
-                <>
-                    {carrito.map((item, index) => (
-                        <div
-                            key={index}
-                            style={cardStyle}
-                        >
-                            <p><b>Marca:</b> {item.marcaCelular}</p>
-                            <p><b>Modelo:</b> {item.modeloCelular}</p>
-                            <p><b>Tipo:</b> {item.tipoFunda}</p>
-                            <p><b>Género:</b> {item.genero}</p>
-                            <p>
-                                <b>Precio:</b> $
-                                {tipoVenta === "especial"
-                                    ? item.precioEspecial || item.precioVenta
-                                    : item.precioVenta}
-                            </p>
-                            <p><b>Código:</b> {item.codigoBarras}</p>
-                            <p><b>Cantidad:</b> {item.cantidad}</p>
+            <div style={carritoBox}>
+                {carrito.length === 0 ? (
+                    <p style={{ margin: 0 }}>No hay productos agregados</p>
+                ) : (
+                    <table style={tableStyle}>
+                        <thead>
+                            <tr>
+                                <th style={thStyle}>Código</th>
+                                <th style={thStyle}>Marca</th>
+                                <th style={thStyle}>Modelo</th>
+                                <th style={thStyle}>Tipo</th>
+                                <th style={thStyle}>Género</th>
+                                <th style={thStyle}>Precio</th>
+                                <th style={thStyle}>Cantidad</th>
+                                <th style={thStyle}>Subtotal</th>
+                                <th style={thStyle}>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {carrito.map((item) => {
+                                const precio =
+                                    tipoVenta === "especial"
+                                        ? Number(item.precioEspecial || item.precioVenta)
+                                        : Number(item.precioVenta);
 
-                            <button style={{ ...buttonStyle, backgroundColor: "#d32f2f" }} onClick={() => quitarProducto(item.codigoBarras)}>
-                                Quitar uno
-                            </button>
-                        </div>
-                    ))}
+                                return (
+                                    <tr key={item.codigoBarras}>
+                                        <td style={tdStyle}>{item.codigoBarras}</td>
+                                        <td style={tdStyle}>{item.marcaCelular}</td>
+                                        <td style={tdStyle}>{item.modeloCelular}</td>
+                                        <td style={tdStyle}>{item.tipoFunda}</td>
+                                        <td style={tdStyle}>{item.genero}</td>
+                                        <td style={tdStyle}>${precio}</td>
+                                        <td style={tdStyle}>{item.cantidad}</td>
+                                        <td style={tdStyle}>
+                                            ${(precio * item.cantidad).toFixed(2)}
+                                        </td>
+                                        <td style={tdStyle}>
+                                            <button
+                                                style={{
+                                                    ...buttonStyle,
+                                                    backgroundColor: "#d32f2f",
+                                                    padding: "6px 10px",
+                                                }}
+                                                onClick={() => quitarProducto(item.codigoBarras)}
+                                            >
+                                                Quitar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                )}
+            </div>
 
-                    <h3>Total: ${total.toFixed(2)}</h3>
+            <div style={bottomSection}>
+                <h3 style={{ margin: 0 }}>Total: ${total.toFixed(2)}</h3>
 
-                    <button
-                        onClick={() => setMostrarConfirmacion(true)}
-                        style={buttonStyle}
-                    >
-                        Registrar venta
-                    </button>
-                    {mostrarConfirmacion && (
+                <button
+                    onClick={() => setMostrarConfirmacion(true)}
+                    style={buttonStyle}
+                    disabled={carrito.length === 0}
+                >
+                    Registrar venta
+                </button>
+            </div>
+
+            {mostrarConfirmacion && (
+                <div style={overlayStyle}>
+                    <div style={modalStyle}>
+                        <h3 style={{ marginTop: 0 }}>Confirmar venta</h3>
+
+                        <label style={labelStyle}>Número de empleado:</label>
+                        <input
+                            type="number"
+                            value={numeroEmpleado}
+                            onChange={(e) => {
+                                setNumeroEmpleado(e.target.value);
+                                setMensaje("");
+                            }}
+                            style={{ ...inputStyle, width: "100%" }}
+                            autoFocus
+                        />
+
                         <div
                             style={{
-                                border: "1px solid gray",
-                                padding: "15px",
-                                marginTop: "20px",
-                                backgroundColor: "#f5f5f5",
-                                width: "320px"
+                                display: "flex",
+                                justifyContent: "center",
+                                gap: "12px",
+                                marginTop: "15px",
                             }}
                         >
-                            <p><b>Confirmar venta</b></p>
-
-                            <label>Número de empleado:</label>
-                            <br />
-                            <input
-                                type="text"
-                                value={numeroEmpleado}
-                                onChange={(e) => {
-                                    setNumeroEmpleado(e.target.value);
-                                    setMensaje("");
-                                }}
-                                style={inputStyle}
-                            />
-
                             <button
                                 onClick={registrarVenta}
                                 disabled={vendiendo}
@@ -292,7 +322,6 @@ function Venta() {
                                     ...buttonStyle,
                                     opacity: vendiendo ? 0.7 : 1,
                                     cursor: vendiendo ? "not-allowed" : "pointer",
-                                    marginRight: "10px"
                                 }}
                             >
                                 {vendiendo ? "Procesando..." : "Confirmar"}
@@ -303,17 +332,112 @@ function Venta() {
                                     setMostrarConfirmacion(false);
                                     setNumeroEmpleado("");
                                 }}
-                                style={buttonStyle}
+                                style={{
+                                    ...buttonStyle,
+                                    backgroundColor: "#d32f2f",
+                                }}
                             >
                                 Cancelar
                             </button>
                         </div>
-                    )}
-                </>
+                    </div>
+                </div>
             )}
         </div>
     );
-
 }
+
+const topSection = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    gap: "20px",
+    marginBottom: "20px",
+    flexWrap: "wrap",
+};
+
+const fieldBlock = {
+    flex: 1,
+    minWidth: "320px",
+};
+
+const fieldBlockSmall = {
+    width: "220px",
+};
+
+const labelStyle = {
+    display: "block",
+    marginBottom: "8px",
+    fontWeight: "bold",
+};
+
+const selectStyle = {
+    width: "100%",
+    padding: "8px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+};
+
+const carritoBox = {
+    border: "1px solid #ddd",
+    borderRadius: "10px",
+    padding: "10px",
+    backgroundColor: "#fff",
+    minHeight: "220px",
+    maxHeight: "320px",
+    overflowY: "auto",
+};
+
+const tableStyle = {
+    width: "100%",
+    borderCollapse: "collapse",
+    fontSize: "14px",
+};
+
+const thStyle = {
+    textAlign: "left",
+    padding: "10px 8px",
+    borderBottom: "1px solid #ddd",
+    backgroundColor: "#f5f5f5",
+    position: "sticky",
+    top: 0,
+};
+
+const tdStyle = {
+    padding: "10px 8px",
+    borderBottom: "1px solid #eee",
+    verticalAlign: "middle",
+};
+
+const bottomSection = {
+    marginTop: "20px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: "15px",
+};
+
+const overlayStyle = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0,0,0,0.45)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+};
+
+const modalStyle = {
+    backgroundColor: "#fff",
+    padding: "24px",
+    borderRadius: "12px",
+    minWidth: "360px",
+    maxWidth: "420px",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+};
 
 export default Venta;

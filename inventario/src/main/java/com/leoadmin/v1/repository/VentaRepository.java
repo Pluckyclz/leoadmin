@@ -7,5 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.leoadmin.v1.entity.Venta;
 
 public interface VentaRepository extends JpaRepository<Venta, Integer> {
-    List<Venta> findBySucursalIdAndFechaHoraBetween(Integer sucursalId, LocalDateTime inicio, LocalDateTime fin);
+
+    List<Venta> findByLocalIdAndFechaHoraBetween(
+            Integer localId,
+            LocalDateTime inicio,
+            LocalDateTime fin);
 }

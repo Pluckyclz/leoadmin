@@ -18,11 +18,11 @@ public class Venta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "sucursal_id")
-    private Integer sucursalId;
+    @Column(name = "local_id")
+    private Integer localId;
 
     @Column(name = "numero_empleado")
-    private String numeroEmpleado;
+    private Integer numeroEmpleado;
 
     @Column(name = "fecha_hora")
     private LocalDateTime fechaHora;
@@ -41,19 +41,19 @@ public class Venta {
         this.id = id;
     }
 
-    public Integer getSucursalId() {
-        return sucursalId;
+    public Integer getLocalId() {
+        return localId;
     }
 
-    public void setSucursalId(Integer sucursalId) {
-        this.sucursalId = sucursalId;
+    public void setLocalId(Integer localId) {
+        this.localId = localId;
     }
 
-    public String getNumeroEmpleado() {
+    public Integer getNumeroEmpleado() {
         return numeroEmpleado;
     }
 
-    public void setNumeroEmpleado(String numeroEmpleado) {
+    public void setNumeroEmpleado(Integer numeroEmpleado) {
         this.numeroEmpleado = numeroEmpleado;
     }
 

@@ -4,24 +4,15 @@ import java.util.List;
 
 public class VentaRequest {
 
-    private Integer sucursalId;
-    private String numeroEmpleado;
+    private Integer numeroEmpleado;
     private String tipoVenta;
     private List<DetalleVentaRequest> productos;
 
-    public Integer getSucursalId() {
-        return sucursalId;
-    }
-
-    public void setSucursalId(Integer sucursalId) {
-        this.sucursalId = sucursalId;
-    }
-
-    public String getNumeroEmpleado() {
+    public Integer getNumeroEmpleado() {
         return numeroEmpleado;
     }
 
-    public void setNumeroEmpleado(String numeroEmpleado) {
+    public void setNumeroEmpleado(Integer numeroEmpleado) {
         this.numeroEmpleado = numeroEmpleado;
     }
 

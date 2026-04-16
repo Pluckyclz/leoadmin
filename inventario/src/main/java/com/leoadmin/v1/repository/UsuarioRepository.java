@@ -8,6 +8,8 @@ import com.leoadmin.v1.entity.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
 
-    Optional<Usuario> findByNumeroEmpleado(String numeroEmpleado);
+    Optional<Usuario> findByNumeroEmpleado(Integer numeroEmpleado);
+
+    boolean existsByNumeroEmpleado(Integer numeroEmpleado);
 
 }

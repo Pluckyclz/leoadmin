@@ -10,6 +10,7 @@ import com.leoadmin.v1.dto.DetalleVentaRequest;
 import com.leoadmin.v1.dto.VentaRequest;
 import com.leoadmin.v1.dto.VentaResponse;
 import com.leoadmin.v1.entity.DetalleVenta;
+import com.leoadmin.v1.entity.Local;
 import com.leoadmin.v1.entity.MovimientoInventario;
 import com.leoadmin.v1.entity.Producto;
 import com.leoadmin.v1.entity.Usuario;
@@ -21,6 +22,8 @@ import com.leoadmin.v1.repository.ProductoRepository;
 import com.leoadmin.v1.repository.UsuarioRepository;
 import com.leoadmin.v1.repository.VentaRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @Service
 public class VentaService {
 
@@ -30,6 +33,7 @@ public class VentaService {
     private final InventarioRepository inventarioRepository;
     private final MovimientoInventarioRepository movimientoInventarioRepository;
     private final UsuarioRepository usuarioRepository;
+    private final LocalService localService;
 
     public VentaService(
             VentaRepository ventaRepository,
@@ -37,7 +41,8 @@ public class VentaService {
             ProductoRepository productoRepository,
             InventarioRepository inventarioRepository,
             MovimientoInventarioRepository movimientoInventarioRepository,
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            LocalService localService) {
 
         this.ventaRepository = ventaRepository;
         this.detalleVentaRepository = detalleVentaRepository;
@@ -45,19 +50,24 @@ public class VentaService {
         this.inventarioRepository = inventarioRepository;
         this.movimientoInventarioRepository = movimientoInventarioRepository;
         this.usuarioRepository = usuarioRepository;
+        this.localService = localService;
     }
 
     @Transactional
-    public VentaResponse procesarVenta(VentaRequest request) {
+    public VentaResponse procesarVenta(VentaRequest request, HttpServletRequest httpRequest) {
 
         VentaResponse error = new VentaResponse();
 
-        if (request.getSucursalId() == null) {
-            error.setMensaje("La sucursal es obligatoria");
+        Local local = localService.obtenerLocalDesdeRequest(httpRequest);
+
+        if (local == null) {
+            error.setMensaje("No se pudo identificar el local desde la IP");
             return error;
         }
 
-        if (request.getNumeroEmpleado() == null || request.getNumeroEmpleado().isBlank()) {
+        Integer localId = local.getId();
+
+        if (request.getNumeroEmpleado() == null) {
             error.setMensaje("El número de empleado es obligatorio");
             return error;
         }
@@ -78,11 +88,6 @@ public class VentaService {
 
         if (!Boolean.TRUE.equals(usuario.getActivo())) {
             error.setMensaje("Empleado inactivo");
-            return error;
-        }
-
-        if (!usuario.getSucursalId().equals(request.getSucursalId())) {
-            error.setMensaje("El empleado no pertenece a la sucursal indicada");
             return error;
         }
 
@@ -110,7 +115,7 @@ public class VentaService {
             }
 
             var inventarioOpt = inventarioRepository
-                    .findByProductoIdAndSucursalId(producto.getId(), request.getSucursalId());
+                    .findByProductoIdAndSucursalId(producto.getId(), localId);
 
             if (inventarioOpt.isEmpty()) {
                 error.setMensaje("Inventario no encontrado para el producto: " + item.getCodigoBarras());
@@ -132,14 +137,12 @@ public class VentaService {
                 precioUnitario = producto.getPrecioVenta();
             }
 
-            BigDecimal subtotal = precioUnitario
-                    .multiply(BigDecimal.valueOf(item.getCantidad()));
-
+            BigDecimal subtotal = precioUnitario.multiply(BigDecimal.valueOf(item.getCantidad()));
             totalGeneral = totalGeneral.add(subtotal);
         }
 
         Venta venta = new Venta();
-        venta.setSucursalId(request.getSucursalId());
+        venta.setLocalId(localId);
         venta.setNumeroEmpleado(request.getNumeroEmpleado());
         venta.setFechaHora(LocalDateTime.now());
         venta.setTotal(totalGeneral);
@@ -167,12 +170,11 @@ public class VentaService {
                 precioUnitario = producto.getPrecioVenta();
             }
 
-            BigDecimal subtotal = precioUnitario
-                    .multiply(BigDecimal.valueOf(item.getCantidad()));
+            BigDecimal subtotal = precioUnitario.multiply(BigDecimal.valueOf(item.getCantidad()));
 
             int filasActualizadas = inventarioRepository.descontarStock(
                     producto.getId(),
-                    request.getSucursalId(),
+                    localId,
                     item.getCantidad());
 
             if (filasActualizadas == 0) {
@@ -190,11 +192,11 @@ public class VentaService {
 
             MovimientoInventario movimiento = new MovimientoInventario();
             movimiento.setProductoId(producto.getId());
-            movimiento.setSucursalId(request.getSucursalId());
+            movimiento.setSucursalId(localId);
             movimiento.setTipoMovimiento("venta");
             movimiento.setCantidad(item.getCantidad() * -1);
             movimiento.setFechaHora(LocalDateTime.now());
-            movimiento.setNumeroEmpleado(request.getNumeroEmpleado());
+            movimiento.setNumeroEmpleado(String.valueOf(request.getNumeroEmpleado()));
             movimiento.setReferenciaId(ventaGuardada.getId());
             movimiento.setObservacion("Venta múltiple desde service");
             movimientoInventarioRepository.save(movimiento);

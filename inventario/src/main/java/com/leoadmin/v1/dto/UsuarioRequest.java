@@ -1,53 +1,16 @@
-package com.leoadmin.v1.entity;
+package com.leoadmin.v1.dto;
 
-import com.leoadmin.v1.enums.RolUsuario;
-import com.leoadmin.v1.enums.ZonaUsuario;
-import jakarta.persistence.*;
+public class UsuarioRequest {
 
-@Entity
-@Table(name = "usuario")
-public class Usuario {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @Column(name = "nombre_completo")
     private String nombreCompleto;
-
-    @Column(name = "numero_empleado", unique = true)
-    private Integer numeroEmpleado;
-
-    @Column(name = "password")
     private String password;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "rol")
-    private RolUsuario rol;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "zona")
-    private ZonaUsuario zona;
-
-    @Column(name = "requiere_login")
+    private Integer numeroEmpleado;
+    private String rol;
+    private String zona;
     private Boolean requiereLogin;
-
-    @Column(name = "telefono")
     private String telefono;
-
-    @Column(name = "email")
     private String email;
-
-    @Column(name = "activo")
     private Boolean activo;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
     public String getNombreCompleto() {
         return nombreCompleto;
@@ -55,14 +18,6 @@ public class Usuario {
 
     public void setNombreCompleto(String nombreCompleto) {
         this.nombreCompleto = nombreCompleto;
-    }
-
-    public Integer getNumeroEmpleado() {
-        return numeroEmpleado;
-    }
-
-    public void setNumeroEmpleado(Integer numeroEmpleado) {
-        this.numeroEmpleado = numeroEmpleado;
     }
 
     public String getPassword() {
@@ -73,19 +28,27 @@ public class Usuario {
         this.password = password;
     }
 
-    public RolUsuario getRol() {
+    public Integer getNumeroEmpleado() {
+        return numeroEmpleado;
+    }
+
+    public void setNumeroEmpleado(Integer numeroEmpleado) {
+        this.numeroEmpleado = numeroEmpleado;
+    }
+
+    public String getRol() {
         return rol;
     }
 
-    public void setRol(RolUsuario rol) {
+    public void setRol(String rol) {
         this.rol = rol;
     }
 
-    public ZonaUsuario getZona() {
+    public String getZona() {
         return zona;
     }
 
-    public void setZona(ZonaUsuario zona) {
+    public void setZona(String zona) {
         this.zona = zona;
     }
 

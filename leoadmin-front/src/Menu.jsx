@@ -1,14 +1,34 @@
 import { buttonStyle } from "./styles";
 
+const opciones = [
+  { key: "venta", label: "Venta" },
+  { key: "inventario", label: "Inventario" },
+  { key: "entrada", label: "Entrada" },
+  { key: "ajuste", label: "Ajuste" },
+  { key: "devolucion", label: "Devolución" },
+  { key: "corte", label: "Corte" },
+  { key: "empleados", label: "Empleados" },
+];
+
 function Menu({ setPantalla }) {
   return (
-    <div style={{ marginBottom: "20px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
-      <button style={buttonStyle} onClick={() => setPantalla("venta")}>Venta</button>
-      <button style={buttonStyle} onClick={() => setPantalla("inventario")}>Inventario</button>
-      <button style={buttonStyle} onClick={() => setPantalla("entrada")}>Entrada</button>
-      <button style={buttonStyle} onClick={() => setPantalla("ajuste")}>Ajuste</button>
-      <button style={buttonStyle} onClick={() => setPantalla("devolucion")}>Devolución</button>
-      <button style={buttonStyle} onClick={() => setPantalla("corte")}>Corte</button>
+    <div
+      style={{
+        marginBottom: "20px",
+        display: "flex",
+        gap: "10px",
+        flexWrap: "wrap",
+      }}
+    >
+      {opciones.map((op) => (
+        <button
+          key={op.key}
+          style={buttonStyle}
+          onClick={() => setPantalla(op.key)}
+        >
+          {op.label}
+        </button>
+      ))}
     </div>
   );
 }
