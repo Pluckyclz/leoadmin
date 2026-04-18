@@ -1,23 +1,28 @@
 export const inputStyle = {
-  padding: "8px",
-  width: "250px",
+  padding: "10px",
+  width: "100%",
+  maxWidth: "100%",
   border: "1px solid #ccc",
   borderRadius: "6px",
 };
 
 export const buttonStyle = {
-  padding: "8px 14px",
+  padding: "10px 14px",
   border: "none",
   borderRadius: "6px",
   cursor: "pointer",
   backgroundColor: "#1976d2",
   color: "white",
+  whiteSpace: "nowrap",
 };
 
 export const cardStyle = {
   border: "1px solid #ddd",
   borderRadius: "8px",
-  padding: "10px",
+  padding: "12px",
   marginBottom: "10px",
   backgroundColor: "#fafafa",
+  width: "100%",
+  maxWidth: "100%",
+  overflowX: "auto",
 };

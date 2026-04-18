@@ -1,61 +1,38 @@
-package com.leoadmin.v1.entity;
+package com.leoadmin.v1.dto;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "producto")
-public class Producto {
+public class ProductoImportRequest {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @Column(name = "categoria")
-    private String categoria;
-
-    @Column(name = "marca_celular")
-    private String marcaCelular;
-
-    @Column(name = "modelo_celular")
-    private String modeloCelular;
-
-    @Column(name = "tipo_funda")
-    private String tipoFunda;
-
-    @Column(name = "genero")
-    private String genero;
-
-    @Column(name = "descripcion")
+    private String claveImagen;
     private String descripcion;
-
-    @Column(name = "imagen_url")
-    private String imagenUrl;
-
-    @Column(name = "precio_venta")
+    private String categoria;
+    private String marcaCelular;
+    private String modeloCelular;
+    private String tipoFunda;
+    private String genero;
     private BigDecimal precioVenta;
-
-    @Column(name = "proveedor")
-    private String proveedor;
-
-    @Column(name = "precio_proveedor")
     private BigDecimal precioProveedor;
-
-    @Column(name = "precio_especial")
     private BigDecimal precioEspecial;
+    private String proveedor;
+    private Integer cantidad;
 
-    @Column(name = "codigo_barras", unique = true)
-    private String codigoBarras;
+    // getters y setters
 
-    @Column(name = "activo")
-    private Boolean activo;
-
-    public Integer getId() {
-        return id;
+    public String getClaveImagen() {
+        return claveImagen;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setClaveImagen(String claveImagen) {
+        this.claveImagen = claveImagen;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public String getCategoria() {
@@ -98,36 +75,12 @@ public class Producto {
         this.genero = genero;
     }
 
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public String getImagenUrl() {
-        return imagenUrl;
-    }
-
-    public void setImagenUrl(String imagenUrl) {
-        this.imagenUrl = imagenUrl;
-    }
-
     public BigDecimal getPrecioVenta() {
         return precioVenta;
     }
 
     public void setPrecioVenta(BigDecimal precioVenta) {
         this.precioVenta = precioVenta;
-    }
-
-    public String getProveedor() {
-        return proveedor;
-    }
-
-    public void setProveedor(String proveedor) {
-        this.proveedor = proveedor;
     }
 
     public BigDecimal getPrecioProveedor() {
@@ -146,19 +99,19 @@ public class Producto {
         this.precioEspecial = precioEspecial;
     }
 
-    public String getCodigoBarras() {
-        return codigoBarras;
+    public String getProveedor() {
+        return proveedor;
     }
 
-    public void setCodigoBarras(String codigoBarras) {
-        this.codigoBarras = codigoBarras;
+    public void setProveedor(String proveedor) {
+        this.proveedor = proveedor;
     }
 
-    public Boolean getActivo() {
-        return activo;
+    public Integer getCantidad() {
+        return cantidad;
     }
 
-    public void setActivo(Boolean activo) {
-        this.activo = activo;
+    public void setCantidad(Integer cantidad) {
+        this.cantidad = cantidad;
     }
 }

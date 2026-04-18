@@ -119,7 +119,7 @@ function Venta() {
 
         const body = {
             numeroEmpleado: Number(numeroEmpleado),
-            tipoVenta: tipoVenta,
+            tipoVenta,
             productos: carrito.map((item) => ({
                 codigoBarras: item.codigoBarras,
                 cantidad: item.cantidad,
@@ -172,11 +172,11 @@ function Venta() {
     }, 0);
 
     return (
-        <div style={{ padding: "20px", fontFamily: "Arial" }}>
+        <div style={containerStyle}>
             <div style={topSection}>
                 <div style={fieldBlock}>
                     <label style={labelStyle}>Código de barras:</label>
-                    <div style={{ display: "flex", gap: "10px" }}>
+                    <div style={codigoRow}>
                         <input
                             ref={inputCodigoRef}
                             type="text"
@@ -219,62 +219,62 @@ function Venta() {
                 </p>
             )}
 
-            <h2 style={{ marginBottom: "15px" }}>Carrito</h2>
+            <h2 style={{ marginBottom: "15px", textAlign: "center" }}>Carrito</h2>
 
             <div style={carritoBox}>
                 {carrito.length === 0 ? (
                     <p style={{ margin: 0 }}>No hay productos agregados</p>
                 ) : (
-                    <table style={tableStyle}>
-                        <thead>
-                            <tr>
-                                <th style={thStyle}>Código</th>
-                                <th style={thStyle}>Marca</th>
-                                <th style={thStyle}>Modelo</th>
-                                <th style={thStyle}>Tipo</th>
-                                <th style={thStyle}>Género</th>
-                                <th style={thStyle}>Precio</th>
-                                <th style={thStyle}>Cantidad</th>
-                                <th style={thStyle}>Subtotal</th>
-                                <th style={thStyle}>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {carrito.map((item) => {
-                                const precio =
-                                    tipoVenta === "especial"
-                                        ? Number(item.precioEspecial || item.precioVenta)
-                                        : Number(item.precioVenta);
+                    <div style={{ overflowX: "auto" }}>
+                        <table style={tableStyle}>
+                            <thead>
+                                <tr>
+                                    <th style={thStyle}>Código</th>
+                                    <th style={thStyle}>Marca</th>
+                                    <th style={thStyle}>Modelo</th>
+                                    <th style={thStyle}>Tipo</th>
+                                    <th style={thStyle}>Género</th>
+                                    <th style={thStyle}>Precio</th>
+                                    <th style={thStyle}>Cantidad</th>
+                                    <th style={thStyle}>Subtotal</th>
+                                    <th style={thStyle}>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {carrito.map((item) => {
+                                    const precio =
+                                        tipoVenta === "especial"
+                                            ? Number(item.precioEspecial || item.precioVenta)
+                                            : Number(item.precioVenta);
 
-                                return (
-                                    <tr key={item.codigoBarras}>
-                                        <td style={tdStyle}>{item.codigoBarras}</td>
-                                        <td style={tdStyle}>{item.marcaCelular}</td>
-                                        <td style={tdStyle}>{item.modeloCelular}</td>
-                                        <td style={tdStyle}>{item.tipoFunda}</td>
-                                        <td style={tdStyle}>{item.genero}</td>
-                                        <td style={tdStyle}>${precio}</td>
-                                        <td style={tdStyle}>{item.cantidad}</td>
-                                        <td style={tdStyle}>
-                                            ${(precio * item.cantidad).toFixed(2)}
-                                        </td>
-                                        <td style={tdStyle}>
-                                            <button
-                                                style={{
-                                                    ...buttonStyle,
-                                                    backgroundColor: "#d32f2f",
-                                                    padding: "6px 10px",
-                                                }}
-                                                onClick={() => quitarProducto(item.codigoBarras)}
-                                            >
-                                                Quitar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                                    return (
+                                        <tr key={item.codigoBarras}>
+                                            <td style={tdStyle}>{item.codigoBarras}</td>
+                                            <td style={tdStyle}>{item.marcaCelular}</td>
+                                            <td style={tdStyle}>{item.modeloCelular}</td>
+                                            <td style={tdStyle}>{item.tipoFunda}</td>
+                                            <td style={tdStyle}>{item.genero}</td>
+                                            <td style={tdStyle}>${precio}</td>
+                                            <td style={tdStyle}>{item.cantidad}</td>
+                                            <td style={tdStyle}>${(precio * item.cantidad).toFixed(2)}</td>
+                                            <td style={tdStyle}>
+                                                <button
+                                                    style={{
+                                                        ...buttonStyle,
+                                                        backgroundColor: "#d32f2f",
+                                                        padding: "6px 10px",
+                                                    }}
+                                                    onClick={() => quitarProducto(item.codigoBarras)}
+                                                >
+                                                    Quitar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
 
@@ -293,9 +293,12 @@ function Venta() {
             {mostrarConfirmacion && (
                 <div style={overlayStyle}>
                     <div style={modalStyle}>
-                        <h3 style={{ marginTop: 0 }}>Confirmar venta</h3>
+                        <h3 style={{ marginTop: 0, textAlign: "center" }}>Confirmar venta</h3>
 
-                        <label style={labelStyle}>Número de empleado:</label>
+                        <label style={{ ...labelStyle, textAlign: "center" }}>
+                            Número de empleado:
+                        </label>
+
                         <input
                             type="number"
                             value={numeroEmpleado}
@@ -313,6 +316,7 @@ function Venta() {
                                 justifyContent: "center",
                                 gap: "12px",
                                 marginTop: "15px",
+                                flexWrap: "wrap",
                             }}
                         >
                             <button
@@ -347,6 +351,11 @@ function Venta() {
     );
 }
 
+const containerStyle = {
+    padding: "20px",
+    fontFamily: "Arial",
+};
+
 const topSection = {
     display: "flex",
     justifyContent: "space-between",
@@ -358,11 +367,18 @@ const topSection = {
 
 const fieldBlock = {
     flex: 1,
-    minWidth: "320px",
+    minWidth: "280px",
 };
 
 const fieldBlockSmall = {
     width: "220px",
+    maxWidth: "100%",
+};
+
+const codigoRow = {
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
 };
 
 const labelStyle = {
@@ -373,7 +389,7 @@ const labelStyle = {
 
 const selectStyle = {
     width: "100%",
-    padding: "8px",
+    padding: "10px",
     borderRadius: "6px",
     border: "1px solid #ccc",
 };
@@ -390,6 +406,7 @@ const carritoBox = {
 
 const tableStyle = {
     width: "100%",
+    minWidth: "900px",
     borderCollapse: "collapse",
     fontSize: "14px",
 };
@@ -429,13 +446,14 @@ const overlayStyle = {
     justifyContent: "center",
     alignItems: "center",
     zIndex: 9999,
+    padding: "16px",
 };
 
 const modalStyle = {
     backgroundColor: "#fff",
     padding: "24px",
     borderRadius: "12px",
-    minWidth: "360px",
+    width: "100%",
     maxWidth: "420px",
     boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
 };

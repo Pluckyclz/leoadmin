@@ -8,38 +8,26 @@ import Corte from "./Corte";
 import Menu from "./Menu";
 import TituloPantalla from "./TituloPantalla";
 import EmpleadosPage from "./EmpleadosPage";
+import "./App.css";
 
 function App() {
   const [pantalla, setPantalla] = useState("venta");
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f4f6f8",
-        padding: "20px",
-        fontFamily: "Arial",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1100px",
-          margin: "0 auto",
-          backgroundColor: "white",
-          padding: "20px",
-          borderRadius: "10px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-        }}
-      >
+    <div className="app-shell">
+      <div className="app-card">
         <Menu setPantalla={setPantalla} />
         <TituloPantalla pantalla={pantalla} />
-        {pantalla === "venta" && <Venta />}
-        {pantalla === "inventario" && <Inventario />}
-        {pantalla === "entrada" && <EntradaInventario />}
-        {pantalla === "ajuste" && <AjusteInventario />}
-        {pantalla === "devolucion" && <Devolucion />}
-        {pantalla === "corte" && <Corte />}
-        {pantalla === "empleados" && <EmpleadosPage />}
+
+        <div className="app-content">
+          {pantalla === "venta" && <Venta />}
+          {pantalla === "inventario" && <Inventario />}
+          {pantalla === "entrada" && <EntradaInventario />}
+          {pantalla === "ajuste" && <AjusteInventario />}
+          {pantalla === "devolucion" && <Devolucion />}
+          {pantalla === "corte" && <Corte />}
+          {pantalla === "empleados" && <EmpleadosPage />}
+        </div>
       </div>
     </div>
   );

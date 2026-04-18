@@ -6,10 +6,11 @@ export default function EmpleadosTable({
     onToggleStatus,
 }) {
     return (
-        <div style={{ marginTop: "20px" }}>
+        <div style={{ marginTop: "20px", overflowX: "auto" }}>
             <table
                 style={{
                     width: "100%",
+                    minWidth: "900px",
                     borderCollapse: "collapse",
                 }}
             >
@@ -17,9 +18,9 @@ export default function EmpleadosTable({
                     <tr style={{ backgroundColor: "#f0f2f5" }}>
                         <th style={th}># Emp</th>
                         <th style={th}>Nombre</th>
-                        <th style={th}>Usuario</th>
                         <th style={th}>Rol</th>
-                        <th style={th}>Sucursal</th>
+                        <th style={th}>Zona</th>
+                        <th style={th}>Login</th>
                         <th style={th}>Estatus</th>
                         <th style={th}>Acciones</th>
                     </tr>
@@ -37,9 +38,9 @@ export default function EmpleadosTable({
                             <tr key={emp.id}>
                                 <td style={td}>{emp.numeroEmpleado}</td>
                                 <td style={td}>{emp.nombreCompleto}</td>
-                                <td style={td}>{emp.usuario}</td>
                                 <td style={td}>{emp.rol}</td>
-                                <td style={td}>{emp.sucursalId}</td>
+                                <td style={td}>{emp.zona}</td>
+                                <td style={td}>{emp.requiereLogin ? "Sí" : "No"}</td>
                                 <td style={td}>
                                     <span
                                         style={{
@@ -51,7 +52,7 @@ export default function EmpleadosTable({
                                     </span>
                                 </td>
                                 <td style={td}>
-                                    <div style={{ display: "flex", gap: "5px" }}>
+                                    <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
                                         <button style={buttonStyle} onClick={() => onEdit(emp)}>
                                             Editar
                                         </button>
@@ -76,9 +77,11 @@ const th = {
     padding: "10px",
     borderBottom: "1px solid #ddd",
     textAlign: "left",
+    whiteSpace: "nowrap",
 };
 
 const td = {
     padding: "10px",
     borderBottom: "1px solid #eee",
+    verticalAlign: "middle",
 };

@@ -53,7 +53,14 @@ public class EntradaInventarioService {
             return "El número de empleado es obligatorio";
         }
 
-        Usuario usuario = usuarioRepository.findByNumeroEmpleado(request.getNumeroEmpleado()).orElse(null);
+        Integer numeroEmpleado;
+        try {
+            numeroEmpleado = Integer.valueOf(request.getNumeroEmpleado());
+        } catch (NumberFormatException e) {
+            return "El número de empleado debe ser numérico";
+        }
+
+        Usuario usuario = usuarioRepository.findByNumeroEmpleado(numeroEmpleado).orElse(null);
         if (usuario == null) {
             return "Empleado no válido";
         }

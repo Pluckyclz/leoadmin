@@ -18,6 +18,7 @@ function Menu({ setPantalla }) {
         display: "flex",
         gap: "10px",
         flexWrap: "wrap",
+        justifyContent: "center",
       }}
     >
       {opciones.map((op) => (

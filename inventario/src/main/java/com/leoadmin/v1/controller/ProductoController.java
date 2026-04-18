@@ -2,22 +2,25 @@ package com.leoadmin.v1.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.leoadmin.v1.entity.Producto;
 import com.leoadmin.v1.repository.ProductoRepository;
+import com.leoadmin.v1.service.ProductoService;
 
 @RestController
 public class ProductoController {
 
     private final ProductoRepository productoRepository;
+    private final ProductoService productoService;
 
-    public ProductoController(ProductoRepository productoRepository) {
+    public ProductoController(
+            ProductoRepository productoRepository,
+            ProductoService productoService) {
         this.productoRepository = productoRepository;
+        this.productoService = productoService;
     }
 
     @GetMapping("/productos")
@@ -33,5 +36,14 @@ public class ProductoController {
     @PostMapping("/productos")
     public Producto crearProducto(@RequestBody Producto producto) {
         return productoRepository.save(producto);
+    }
+
+    @PostMapping(value = "/productos/importar/{sucursalId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String importarProductos(
+            @PathVariable Integer sucursalId,
+            @RequestParam("excel") MultipartFile excel,
+            @RequestParam("zipImagenes") MultipartFile zipImagenes) {
+
+        return productoService.importarProductosDesdeArchivos(sucursalId, excel, zipImagenes);
     }
 }

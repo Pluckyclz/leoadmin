@@ -13,6 +13,7 @@ import com.leoadmin.v1.entity.MovimientoInventario;
 import com.leoadmin.v1.entity.Producto;
 import com.leoadmin.v1.entity.Usuario;
 import com.leoadmin.v1.entity.Venta;
+import com.leoadmin.v1.enums.RolUsuario;
 import com.leoadmin.v1.repository.DetalleVentaRepository;
 import com.leoadmin.v1.repository.InventarioRepository;
 import com.leoadmin.v1.repository.MovimientoInventarioRepository;
@@ -64,7 +65,14 @@ public class DevolucionService {
             return "El número de empleado es obligatorio";
         }
 
-        Usuario usuario = usuarioRepository.findByNumeroEmpleado(request.getNumeroEmpleado()).orElse(null);
+        Integer numeroEmpleado;
+        try {
+            numeroEmpleado = Integer.valueOf(request.getNumeroEmpleado());
+        } catch (NumberFormatException e) {
+            return "El número de empleado debe ser numérico";
+        }
+
+        Usuario usuario = usuarioRepository.findByNumeroEmpleado(numeroEmpleado).orElse(null);
         if (usuario == null) {
             return "Empleado no válido";
         }
@@ -73,7 +81,7 @@ public class DevolucionService {
             return "Empleado inactivo";
         }
 
-        if (!"admin".equalsIgnoreCase(usuario.getRol())) {
+        if (usuario.getRol() != RolUsuario.ADMIN && usuario.getRol() != RolUsuario.SUPER_ADMIN) {
             return "Solo un administrador puede registrar devoluciones";
         }
 
@@ -102,8 +110,8 @@ public class DevolucionService {
                 .negate();
 
         Venta ventaDevolucion = new Venta();
-        ventaDevolucion.setSucursalId(request.getSucursalId());
-        ventaDevolucion.setNumeroEmpleado(request.getNumeroEmpleado());
+        ventaDevolucion.setLocalId(request.getSucursalId());
+        ventaDevolucion.setNumeroEmpleado(numeroEmpleado);
         ventaDevolucion.setFechaHora(LocalDateTime.now());
         ventaDevolucion.setTotal(subtotalNegativo);
         ventaDevolucion.setTipoOperacion("devolucion");
@@ -116,7 +124,6 @@ public class DevolucionService {
         detalle.setCantidad(request.getCantidad());
         detalle.setPrecioUnitario(precioUnitario);
         detalle.setSubtotal(subtotalNegativo);
-
         detalleVentaRepository.save(detalle);
 
         MovimientoInventario movimiento = new MovimientoInventario();
