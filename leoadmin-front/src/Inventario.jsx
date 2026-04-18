@@ -7,33 +7,11 @@ function Inventario() {
     const [marca, setMarca] = useState("");
     const [modelo, setModelo] = useState("");
     const [genero, setGenero] = useState("");
-    const [productos, setProductos] = useState([]);
-    const [mensaje, setMensaje] = useState("");
-
-    const [paginaActual, setPaginaActual] = useState(1);
-    const [orden, setOrden] = useState({ campo: null, direccion: "asc" });
-    const productosPorPagina = 10;
-
     const [codigoBarras, setCodigoBarras] = useState("");
 
-    const totalResultados = productos.length;
-
-    const totalPiezas = productos.reduce((acc, p) => acc + Number(p.cantidad || 0), 0);
-
-    const indicadorOrden = (campo) => {
-        if (orden.campo !== campo) return "";
-        return orden.direccion === "asc" ? " ↑" : " ↓";
-    };
-
-    const ordenar = (campo) => {
-        let direccion = "asc";
-
-        if (orden.campo === campo && orden.direccion === "asc") {
-            direccion = "desc";
-        }
-
-        setOrden({ campo, direccion });
-    };
+    const [productos, setProductos] = useState([]);
+    const [mensaje, setMensaje] = useState("");
+    const [imagenPreview, setImagenPreview] = useState(null);
 
     const consultarInventario = async () => {
         try {
@@ -44,9 +22,7 @@ function Inventario() {
             if (modelo.trim()) params.append("modelo", modelo);
             if (genero.trim()) params.append("genero", genero);
 
-            if (params.toString()) {
-                url += `?${params.toString()}`;
-            }
+            if (params.toString()) url += `?${params.toString()}`;
 
             const response = await fetch(url);
             const data = await response.json();
@@ -55,12 +31,11 @@ function Inventario() {
 
             if (codigoBarras.trim()) {
                 resultado = resultado.filter((p) =>
-                    p.codigoBarras?.includes(codigoBarras)
+                    p.codigoBarras?.toLowerCase().includes(codigoBarras.toLowerCase())
                 );
             }
 
             setProductos(resultado);
-            setPaginaActual(1);
             setMensaje("");
         } catch (error) {
             console.error(error);
@@ -72,167 +47,328 @@ function Inventario() {
         setMarca("");
         setModelo("");
         setGenero("");
+        setCodigoBarras("");
         setProductos([]);
         setMensaje("");
-        setPaginaActual(1);
-        setCodigoBarras("");
     };
 
-    const productosOrdenados = [...productos].sort((a, b) => {
-        if (!orden.campo) return 0;
+    const totalPiezas = productos.reduce(
+        (acc, p) => acc + Number(p.cantidad || 0),
+        0
+    );
 
-        let valorA = a[orden.campo];
-        let valorB = b[orden.campo];
+    const abrirPreviewImagen = (url) => {
+        setImagenPreview(url);
+    };
 
-        if (typeof valorA === "string") valorA = valorA.toLowerCase();
-        if (typeof valorB === "string") valorB = valorB.toLowerCase();
-
-        if (valorA < valorB) return orden.direccion === "asc" ? -1 : 1;
-        if (valorA > valorB) return orden.direccion === "asc" ? 1 : -1;
-        return 0;
-    });
-
-    const indiceUltimo = paginaActual * productosPorPagina;
-    const indicePrimero = indiceUltimo - productosPorPagina;
-    const productosPagina = productosOrdenados.slice(indicePrimero, indiceUltimo);
-    const totalPaginas = Math.ceil(productos.length / productosPorPagina);
+    const cerrarPreviewImagen = () => {
+        setImagenPreview(null);
+    };
 
     return (
-        <div>
-            <h1>Leoadmin - Inventario</h1>
+        <div style={container}>
+            <h1 style={titleStyle}>Inventario</h1>
 
-            <div style={{ marginBottom: "10px" }}>
-                <label>Sucursal:</label>
-                <br />
-                <input
-                    style={inputStyle}
-                    type="text"
-                    value={sucursalId}
-                    onChange={(e) => setSucursalId(e.target.value)}
-                />
+            <div style={filtrosWrapper}>
+                <div style={filtrosGrid}>
+                    <input
+                        placeholder="Sucursal"
+                        value={sucursalId}
+                        onChange={(e) => setSucursalId(e.target.value)}
+                        style={filtroInput}
+                    />
+
+                    <input
+                        placeholder="Marca"
+                        value={marca}
+                        onChange={(e) => setMarca(e.target.value)}
+                        style={filtroInput}
+                    />
+
+                    <input
+                        placeholder="Modelo"
+                        value={modelo}
+                        onChange={(e) => setModelo(e.target.value)}
+                        style={filtroInput}
+                    />
+
+                    <input
+                        placeholder="Género"
+                        value={genero}
+                        onChange={(e) => setGenero(e.target.value)}
+                        style={filtroInput}
+                    />
+
+                    <input
+                        placeholder="Código de barras"
+                        value={codigoBarras}
+                        onChange={(e) => setCodigoBarras(e.target.value)}
+                        style={filtroInputFull}
+                    />
+                </div>
+
+                <div style={accionesBox}>
+                    <button style={buttonStyle} onClick={consultarInventario}>
+                        Consultar
+                    </button>
+
+                    <button
+                        style={{ ...buttonStyle, backgroundColor: "#757575" }}
+                        onClick={limpiar}
+                    >
+                        Limpiar
+                    </button>
+                </div>
             </div>
-
-            <div style={{ marginBottom: "10px" }}>
-                <label>Marca:</label>
-                <br />
-                <input
-                    style={inputStyle}
-                    type="text"
-                    value={marca}
-                    onChange={(e) => setMarca(e.target.value)}
-                />
-            </div>
-
-            <div style={{ marginBottom: "10px" }}>
-                <label>Modelo:</label>
-                <br />
-                <input
-                    style={inputStyle}
-                    type="text"
-                    value={modelo}
-                    onChange={(e) => setModelo(e.target.value)}
-                />
-            </div>
-
-            <div style={{ marginBottom: "10px" }}>
-                <label>Género:</label>
-                <br />
-                <input
-                    style={inputStyle}
-                    type="text"
-                    value={genero}
-                    onChange={(e) => setGenero(e.target.value)}
-                />
-            </div>
-
-            <div style={{ marginBottom: "10px" }}>
-                <label>Código de barras:</label>
-                <br />
-                <input
-                    style={inputStyle}
-                    type="text"
-                    value={codigoBarras}
-                    onChange={(e) => setCodigoBarras(e.target.value)}
-                />
-            </div>
-
-            <button style={buttonStyle} onClick={consultarInventario}>
-                Consultar
-            </button>
-
-            <button
-                onClick={limpiar}
-                style={{ ...buttonStyle, backgroundColor: "#757575", marginLeft: "10px" }}
-            >
-                Limpiar
-            </button>
 
             {mensaje && (
-                <p style={{ color: "red", fontWeight: "bold", marginTop: "20px" }}>
+                <p style={{ color: "red", fontWeight: "bold", textAlign: "center" }}>
                     {mensaje}
                 </p>
             )}
 
-            {productos.length === 0 && !mensaje && (
-                <p style={{ marginTop: "20px" }}>Sin resultados</p>
-            )}
-            <div style={{ marginTop: "15px", marginBottom: "15px" }}>
-                <b>Resultados:</b> {totalResultados} | <b>Total de piezas:</b> {totalPiezas}
+            <div style={resumenBox}>
+                <span>
+                    <b>Resultados:</b> {productos.length}
+                </span>
+                <span>
+                    <b>Piezas:</b> {totalPiezas}
+                </span>
             </div>
-            {productos.length > 0 && (
-                <div style={{ marginTop: "20px", ...cardStyle }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <thead>
-                            <tr>
-                                <th onClick={() => ordenar("codigoBarras")} style={{ cursor: "pointer" }}>Código{indicadorOrden("codigoBarras")}</th>
-                                <th onClick={() => ordenar("marcaCelular")} style={{ cursor: "pointer" }}>Marca{indicadorOrden("codigoBarras")}</th>
-                                <th onClick={() => ordenar("modeloCelular")} style={{ cursor: "pointer" }}>Modelo{indicadorOrden("codigoBarras")}</th>
-                                <th>Tipo</th>
-                                <th>Género</th>
-                                <th>Precio</th>
-                                <th onClick={() => ordenar("cantidad")}>Cantidad</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {productosPagina.map((p) => (
-                                <tr key={p.productoId}>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>{p.codigoBarras}</td>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>{p.marcaCelular}</td>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>{p.modeloCelular}</td>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>{p.tipoFunda}</td>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>{p.genero}</td>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>${p.precioVenta}</td>
-                                    <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>{p.cantidad}</td>
+
+            <div style={{ ...cardStyle, marginTop: "16px", padding: "0" }}>
+                {productos.length === 0 ? (
+                    <div style={sinResultados}>Sin resultados</div>
+                ) : (
+                    <div style={tablaWrapper}>
+                        <table style={table}>
+                            <thead>
+                                <tr>
+                                    <th style={th}>Img</th>
+                                    <th style={th}>Código</th>
+                                    <th style={th}>Descripción</th>
+                                    <th style={th}>Marca</th>
+                                    <th style={th}>Modelo</th>
+                                    <th style={th}>Tipo</th>
+                                    <th style={th}>Género</th>
+                                    <th style={th}>Precio</th>
+                                    <th style={th}>Cantidad</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
 
-                    <div style={{ marginTop: "15px", display: "flex", alignItems: "center", gap: "10px" }}>
-                        <button
-                            style={{ ...buttonStyle, backgroundColor: "#757575" }}
-                            onClick={() => setPaginaActual(paginaActual - 1)}
-                            disabled={paginaActual === 1}
-                        >
-                            Anterior
+                            <tbody>
+                                {productos.map((p) => {
+                                    const imageUrl = p.imagenUrl
+                                        ? `${API_URL}/uploads/productos/${p.imagenUrl}`
+                                        : null;
+
+                                    return (
+                                        <tr key={`${p.productoId}-${p.codigoBarras}`}>
+                                            <td style={td}>
+                                                {imageUrl ? (
+                                                    <img
+                                                        src={imageUrl}
+                                                        alt={p.descripcion || p.codigoBarras}
+                                                        style={img}
+                                                        onClick={() => abrirPreviewImagen(imageUrl)}
+                                                        onError={(e) => {
+                                                            e.currentTarget.style.display = "none";
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <span style={sinImgText}>Sin img</span>
+                                                )}
+                                            </td>
+
+                                            <td style={td}>{p.codigoBarras}</td>
+                                            <td style={td}>
+                                                <div style={descripcionCell}>
+                                                    {p.descripcion || "-"}
+                                                </div>
+                                            </td>
+                                            <td style={td}>{p.marcaCelular}</td>
+                                            <td style={td}>{p.modeloCelular}</td>
+                                            <td style={td}>{p.tipoFunda}</td>
+                                            <td style={td}>{p.genero}</td>
+                                            <td style={td}>${p.precioVenta}</td>
+                                            <td style={td}>{p.cantidad}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {imagenPreview && (
+                <div style={imageOverlayStyle} onClick={cerrarPreviewImagen}>
+                    <div
+                        style={imageModalStyle}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button style={closeButtonStyle} onClick={cerrarPreviewImagen}>
+                            ×
                         </button>
 
-                        <span>
-                            Página {paginaActual} de {totalPaginas || 1}
-                        </span>
-
-                        <button
-                            style={buttonStyle}
-                            onClick={() => setPaginaActual(paginaActual + 1)}
-                            disabled={paginaActual === totalPaginas || totalPaginas === 0}
-                        >
-                            Siguiente
-                        </button>
+                        <img
+                            src={imagenPreview}
+                            alt="Vista previa"
+                            style={previewImageStyle}
+                        />
                     </div>
                 </div>
             )}
         </div>
     );
 }
+
+const container = {
+    padding: "20px",
+};
+
+const titleStyle = {
+    textAlign: "center",
+    marginBottom: "24px",
+};
+
+const filtrosWrapper = {
+    maxWidth: "950px",
+    margin: "0 auto 20px auto",
+};
+
+const filtrosGrid = {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "12px",
+};
+
+const filtroInput = {
+    ...inputStyle,
+    width: "100%",
+};
+
+const filtroInputFull = {
+    ...inputStyle,
+    width: "100%",
+    gridColumn: "1 / -1",
+};
+
+const accionesBox = {
+    display: "flex",
+    justifyContent: "center",
+    gap: "12px",
+    marginTop: "16px",
+    flexWrap: "wrap",
+};
+
+const resumenBox = {
+    display: "flex",
+    justifyContent: "center",
+    gap: "24px",
+    marginTop: "12px",
+    fontWeight: "bold",
+    flexWrap: "wrap",
+};
+
+const tablaWrapper = {
+    overflowX: "auto",
+    maxHeight: "520px",
+    overflowY: "auto",
+};
+
+const table = {
+    width: "100%",
+    minWidth: "1100px",
+    borderCollapse: "collapse",
+    fontSize: "13px",
+};
+
+const th = {
+    textAlign: "left",
+    padding: "10px 8px",
+    borderBottom: "1px solid #ddd",
+    backgroundColor: "#f5f5f5",
+    position: "sticky",
+    top: 0,
+    zIndex: 1,
+    whiteSpace: "nowrap",
+};
+
+const td = {
+    padding: "8px",
+    borderBottom: "1px solid #eee",
+    verticalAlign: "middle",
+};
+
+const img = {
+    width: "48px",
+    height: "48px",
+    objectFit: "cover",
+    borderRadius: "6px",
+    border: "1px solid #ddd",
+    display: "block",
+    cursor: "pointer",
+};
+
+const sinImgText = {
+    fontSize: "11px",
+    color: "#999",
+};
+
+const descripcionCell = {
+    maxWidth: "260px",
+    whiteSpace: "normal",
+    lineHeight: "1.3",
+};
+
+const sinResultados = {
+    textAlign: "center",
+    padding: "18px",
+    color: "#666",
+};
+
+const imageOverlayStyle = {
+    position: "fixed",
+    inset: 0,
+    backgroundColor: "rgba(0,0,0,0.75)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10000,
+    padding: "20px",
+};
+
+const imageModalStyle = {
+    position: "relative",
+    maxWidth: "90vw",
+    maxHeight: "90vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+};
+
+const previewImageStyle = {
+    maxWidth: "90vw",
+    maxHeight: "85vh",
+    borderRadius: "10px",
+    boxShadow: "0 8px 30px rgba(0,0,0,0.35)",
+    backgroundColor: "#fff",
+};
+
+const closeButtonStyle = {
+    position: "absolute",
+    top: "-14px",
+    right: "-14px",
+    width: "36px",
+    height: "36px",
+    borderRadius: "50%",
+    border: "none",
+    backgroundColor: "#d32f2f",
+    color: "#fff",
+    fontSize: "22px",
+    cursor: "pointer",
+    lineHeight: "36px",
+};
 
 export default Inventario;

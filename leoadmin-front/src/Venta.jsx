@@ -10,6 +10,7 @@ function Venta() {
     const [mensaje, setMensaje] = useState("");
     const [tipoVenta, setTipoVenta] = useState("publico");
     const [vendiendo, setVendiendo] = useState(false);
+    const [imagenPreview, setImagenPreview] = useState(null);
 
     const inputCodigoRef = useRef(null);
 
@@ -162,6 +163,14 @@ function Venta() {
         }
     };
 
+    const abrirPreviewImagen = (url) => {
+        setImagenPreview(url);
+    };
+
+    const cerrarPreviewImagen = () => {
+        setImagenPreview(null);
+    };
+
     const total = carrito.reduce((acumulado, item) => {
         const precio =
             tipoVenta === "especial"
@@ -229,11 +238,11 @@ function Venta() {
                         <table style={tableStyle}>
                             <thead>
                                 <tr>
+                                    <th style={thStyle}>Img</th>
                                     <th style={thStyle}>Código</th>
+                                    <th style={thStyle}>Descripción</th>
                                     <th style={thStyle}>Marca</th>
                                     <th style={thStyle}>Modelo</th>
-                                    <th style={thStyle}>Tipo</th>
-                                    <th style={thStyle}>Género</th>
                                     <th style={thStyle}>Precio</th>
                                     <th style={thStyle}>Cantidad</th>
                                     <th style={thStyle}>Subtotal</th>
@@ -247,16 +256,44 @@ function Venta() {
                                             ? Number(item.precioEspecial || item.precioVenta)
                                             : Number(item.precioVenta);
 
+                                    const imageUrl = item.imagenUrl
+                                        ? `${API_URL}/uploads/productos/${item.imagenUrl}`
+                                        : null;
+
                                     return (
                                         <tr key={item.codigoBarras}>
+                                            <td style={tdStyle}>
+                                                {imageUrl ? (
+                                                    <img
+                                                        src={imageUrl}
+                                                        alt={item.descripcion || item.codigoBarras}
+                                                        style={imgStyle}
+                                                        onClick={() => abrirPreviewImagen(imageUrl)}
+                                                        onError={(e) => {
+                                                            e.currentTarget.style.display = "none";
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <span style={sinImagenStyle}>Sin img</span>
+                                                )}
+                                            </td>
+
                                             <td style={tdStyle}>{item.codigoBarras}</td>
+
+                                            <td style={tdStyle}>
+                                                <div style={descripcionStyle}>
+                                                    {item.descripcion ||
+                                                        `${item.tipoFunda || ""} ${item.genero || ""}`.trim()}
+                                                </div>
+                                            </td>
+
                                             <td style={tdStyle}>{item.marcaCelular}</td>
                                             <td style={tdStyle}>{item.modeloCelular}</td>
-                                            <td style={tdStyle}>{item.tipoFunda}</td>
-                                            <td style={tdStyle}>{item.genero}</td>
                                             <td style={tdStyle}>${precio}</td>
                                             <td style={tdStyle}>{item.cantidad}</td>
-                                            <td style={tdStyle}>${(precio * item.cantidad).toFixed(2)}</td>
+                                            <td style={tdStyle}>
+                                                ${(precio * item.cantidad).toFixed(2)}
+                                            </td>
                                             <td style={tdStyle}>
                                                 <button
                                                     style={{
@@ -293,7 +330,9 @@ function Venta() {
             {mostrarConfirmacion && (
                 <div style={overlayStyle}>
                     <div style={modalStyle}>
-                        <h3 style={{ marginTop: 0, textAlign: "center" }}>Confirmar venta</h3>
+                        <h3 style={{ marginTop: 0, textAlign: "center" }}>
+                            Confirmar venta
+                        </h3>
 
                         <label style={{ ...labelStyle, textAlign: "center" }}>
                             Número de empleado:
@@ -344,6 +383,25 @@ function Venta() {
                                 Cancelar
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {imagenPreview && (
+                <div style={imageOverlayStyle} onClick={cerrarPreviewImagen}>
+                    <div
+                        style={imageModalStyle}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button style={closeButtonStyle} onClick={cerrarPreviewImagen}>
+                            ×
+                        </button>
+
+                        <img
+                            src={imagenPreview}
+                            alt="Vista previa"
+                            style={previewImageStyle}
+                        />
                     </div>
                 </div>
             )}
@@ -400,30 +458,52 @@ const carritoBox = {
     padding: "10px",
     backgroundColor: "#fff",
     minHeight: "220px",
-    maxHeight: "320px",
+    maxHeight: "360px",
     overflowY: "auto",
 };
 
 const tableStyle = {
     width: "100%",
-    minWidth: "900px",
+    minWidth: "1000px",
     borderCollapse: "collapse",
-    fontSize: "14px",
+    fontSize: "13px",
 };
 
 const thStyle = {
     textAlign: "left",
-    padding: "10px 8px",
+    padding: "6px 6px",
     borderBottom: "1px solid #ddd",
     backgroundColor: "#f5f5f5",
     position: "sticky",
     top: 0,
+    whiteSpace: "nowrap",
 };
 
 const tdStyle = {
-    padding: "10px 8px",
+    padding: "6px 6px",
     borderBottom: "1px solid #eee",
     verticalAlign: "middle",
+};
+
+const imgStyle = {
+    width: "54px",
+    height: "54px",
+    objectFit: "cover",
+    borderRadius: "6px",
+    border: "1px solid #ddd",
+    display: "block",
+    cursor: "pointer",
+};
+
+const sinImagenStyle = {
+    fontSize: "11px",
+    color: "#999",
+};
+
+const descripcionStyle = {
+    maxWidth: "230px",
+    whiteSpace: "normal",
+    lineHeight: "1.3",
 };
 
 const bottomSection = {
@@ -456,6 +536,49 @@ const modalStyle = {
     width: "100%",
     maxWidth: "420px",
     boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+};
+
+const imageOverlayStyle = {
+    position: "fixed",
+    inset: 0,
+    backgroundColor: "rgba(0,0,0,0.75)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10000,
+    padding: "20px",
+};
+
+const imageModalStyle = {
+    position: "relative",
+    maxWidth: "90vw",
+    maxHeight: "90vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+};
+
+const previewImageStyle = {
+    maxWidth: "90vw",
+    maxHeight: "85vh",
+    borderRadius: "10px",
+    boxShadow: "0 8px 30px rgba(0,0,0,0.35)",
+    backgroundColor: "#fff",
+};
+
+const closeButtonStyle = {
+    position: "absolute",
+    top: "-14px",
+    right: "-14px",
+    width: "36px",
+    height: "36px",
+    borderRadius: "50%",
+    border: "none",
+    backgroundColor: "#d32f2f",
+    color: "#fff",
+    fontSize: "22px",
+    cursor: "pointer",
+    lineHeight: "36px",
 };
 
 export default Venta;

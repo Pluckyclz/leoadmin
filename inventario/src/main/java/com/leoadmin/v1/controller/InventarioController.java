@@ -3,11 +3,11 @@ package com.leoadmin.v1.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.leoadmin.v1.dto.InventarioResponse;
 import com.leoadmin.v1.entity.Inventario;
@@ -38,18 +38,7 @@ public class InventarioController {
             Producto producto = productoRepository.findById(inventario.getProductoId()).orElse(null);
 
             if (producto != null) {
-                InventarioResponse item = new InventarioResponse();
-                item.setProductoId(producto.getId());
-                item.setCategoria(producto.getCategoria());
-                item.setMarcaCelular(producto.getMarcaCelular());
-                item.setModeloCelular(producto.getModeloCelular());
-                item.setTipoFunda(producto.getTipoFunda());
-                item.setGenero(producto.getGenero());
-                item.setPrecioVenta(producto.getPrecioVenta());
-                item.setCodigoBarras(producto.getCodigoBarras());
-                item.setCantidad(inventario.getCantidad());
-
-                respuesta.add(item);
+                respuesta.add(mapearInventarioResponse(producto, inventario));
             }
         }
 
@@ -73,37 +62,45 @@ public class InventarioController {
                 boolean coincide = true;
 
                 if (marca != null && !marca.isBlank()
-                        && !producto.getMarcaCelular().equalsIgnoreCase(marca)) {
+                        && (producto.getMarcaCelular() == null
+                                || !producto.getMarcaCelular().equalsIgnoreCase(marca))) {
                     coincide = false;
                 }
 
                 if (modelo != null && !modelo.isBlank()
-                        && !producto.getModeloCelular().equalsIgnoreCase(modelo)) {
+                        && (producto.getModeloCelular() == null
+                                || !producto.getModeloCelular().equalsIgnoreCase(modelo))) {
                     coincide = false;
                 }
 
                 if (genero != null && !genero.isBlank()
-                        && !producto.getGenero().equalsIgnoreCase(genero)) {
+                        && (producto.getGenero() == null
+                                || !producto.getGenero().equalsIgnoreCase(genero))) {
                     coincide = false;
                 }
 
                 if (coincide) {
-                    InventarioResponse item = new InventarioResponse();
-                    item.setProductoId(producto.getId());
-                    item.setCategoria(producto.getCategoria());
-                    item.setMarcaCelular(producto.getMarcaCelular());
-                    item.setModeloCelular(producto.getModeloCelular());
-                    item.setTipoFunda(producto.getTipoFunda());
-                    item.setGenero(producto.getGenero());
-                    item.setPrecioVenta(producto.getPrecioVenta());
-                    item.setCodigoBarras(producto.getCodigoBarras());
-                    item.setCantidad(inventario.getCantidad());
-
-                    respuesta.add(item);
+                    respuesta.add(mapearInventarioResponse(producto, inventario));
                 }
             }
         }
 
         return respuesta;
+    }
+
+    private InventarioResponse mapearInventarioResponse(Producto producto, Inventario inventario) {
+        InventarioResponse item = new InventarioResponse();
+        item.setProductoId(producto.getId());
+        item.setCategoria(producto.getCategoria());
+        item.setMarcaCelular(producto.getMarcaCelular());
+        item.setModeloCelular(producto.getModeloCelular());
+        item.setTipoFunda(producto.getTipoFunda());
+        item.setGenero(producto.getGenero());
+        item.setDescripcion(producto.getDescripcion());
+        item.setImagenUrl(producto.getImagenUrl());
+        item.setPrecioVenta(producto.getPrecioVenta());
+        item.setCodigoBarras(producto.getCodigoBarras());
+        item.setCantidad(inventario.getCantidad());
+        return item;
     }
 }
