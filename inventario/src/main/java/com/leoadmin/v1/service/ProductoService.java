@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -20,22 +21,48 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.leoadmin.v1.dto.ProductoManualRequest;
+import com.leoadmin.v1.entity.Categoria;
+import com.leoadmin.v1.entity.Genero;
 import com.leoadmin.v1.entity.Inventario;
+import com.leoadmin.v1.entity.Marca;
+import com.leoadmin.v1.entity.Modelo;
 import com.leoadmin.v1.entity.Producto;
+import com.leoadmin.v1.entity.TipoFunda;
+import com.leoadmin.v1.repository.CategoriaRepository;
+import com.leoadmin.v1.repository.GeneroRepository;
 import com.leoadmin.v1.repository.InventarioRepository;
+import com.leoadmin.v1.repository.MarcaRepository;
+import com.leoadmin.v1.repository.ModeloRepository;
 import com.leoadmin.v1.repository.ProductoRepository;
+import com.leoadmin.v1.repository.TipoFundaRepository;
 
 @Service
 public class ProductoService {
 
     private final ProductoRepository productoRepository;
     private final InventarioRepository inventarioRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final MarcaRepository marcaRepository;
+    private final ModeloRepository modeloRepository;
+    private final TipoFundaRepository tipoFundaRepository;
+    private final GeneroRepository generoRepository;
 
     public ProductoService(
             ProductoRepository productoRepository,
-            InventarioRepository inventarioRepository) {
+            InventarioRepository inventarioRepository,
+            CategoriaRepository categoriaRepository,
+            MarcaRepository marcaRepository,
+            ModeloRepository modeloRepository,
+            TipoFundaRepository tipoFundaRepository,
+            GeneroRepository generoRepository) {
         this.productoRepository = productoRepository;
         this.inventarioRepository = inventarioRepository;
+        this.categoriaRepository = categoriaRepository;
+        this.marcaRepository = marcaRepository;
+        this.modeloRepository = modeloRepository;
+        this.tipoFundaRepository = tipoFundaRepository;
+        this.generoRepository = generoRepository;
     }
 
     public String generarCodigoBarras() {
@@ -165,6 +192,87 @@ public class ProductoService {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Transactional
+    public String crearProductoManual(ProductoManualRequest request) {
+
+        Producto producto = new Producto();
+
+        if (request.getCategoriaId() != null) {
+            Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
+                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+            producto.setCategoriaObj(categoria);
+            producto.setCategoria(categoria.getNombre());
+        } else {
+            producto.setCategoria(request.getCategoria());
+        }
+
+        if (request.getMarcaId() != null) {
+            Marca marca = marcaRepository.findById(request.getMarcaId())
+                    .orElseThrow(() -> new RuntimeException("Marca no encontrada"));
+            producto.setMarca(marca);
+            producto.setMarcaCelular(marca.getNombre());
+        } else {
+            producto.setMarcaCelular(request.getMarcaCelular());
+        }
+
+        if (request.getModeloId() != null) {
+            Modelo modelo = modeloRepository.findById(request.getModeloId())
+                    .orElseThrow(() -> new RuntimeException("Modelo no encontrado"));
+            producto.setModelo(modelo);
+            producto.setModeloCelular(modelo.getNombre());
+        } else {
+            producto.setModeloCelular(request.getModeloCelular());
+        }
+
+        if (request.getTipoFundaId() != null) {
+            TipoFunda tipo = tipoFundaRepository.findById(request.getTipoFundaId())
+                    .orElseThrow(() -> new RuntimeException("Tipo de funda no encontrado"));
+            producto.setTipoFundaObj(tipo);
+            producto.setTipoFunda(tipo.getNombre());
+        } else {
+            producto.setTipoFunda(request.getTipoFunda());
+        }
+
+        if (request.getGeneroId() != null) {
+            Genero genero = generoRepository.findById(request.getGeneroId())
+                    .orElseThrow(() -> new RuntimeException("Género no encontrado"));
+            producto.setGeneroObj(genero);
+            producto.setGenero(genero.getNombre());
+        } else {
+            producto.setGenero(request.getGenero());
+        }
+
+        producto.setDescripcion(request.getDescripcion());
+        producto.setImagenUrl(request.getImagenUrl());
+        producto.setPrecioVenta(request.getPrecioVenta());
+        producto.setProveedor(request.getProveedor());
+        producto.setPrecioProveedor(request.getPrecioProveedor());
+        producto.setPrecioEspecial(request.getPrecioEspecial());
+        producto.setCodigoBarras(request.getCodigoBarras());
+        producto.setActivo(request.getActivo() != null ? request.getActivo() : true);
+
+        productoRepository.save(producto);
+
+        if (request.getSucursalId() != null && request.getCantidadInicial() != null) {
+            Optional<Inventario> existente = inventarioRepository
+                    .findByProductoIdAndSucursalId(producto.getId(), request.getSucursalId());
+
+            if (existente.isPresent()) {
+                Inventario inv = existente.get();
+                inv.setCantidad(inv.getCantidad() + request.getCantidadInicial());
+                inventarioRepository.save(inv);
+            } else {
+                Inventario inv = new Inventario();
+                inv.setProductoId(producto.getId());
+                inv.setSucursalId(request.getSucursalId());
+                inv.setCantidad(request.getCantidadInicial());
+                inventarioRepository.save(inv);
+            }
+        }
+
+        return "Producto creado correctamente";
     }
 
     private boolean filaVacia(Row row, DataFormatter formatter) {

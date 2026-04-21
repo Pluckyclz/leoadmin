@@ -1,122 +1,37 @@
-package com.leoadmin.v1.entity;
+package com.leoadmin.v1.dto;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "producto")
-public class Producto {
+public class ProductoManualRequest {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @ManyToOne
-    @JoinColumn(name = "categoria_id")
-    private Categoria categoriaObj;
-
-    @ManyToOne
-    @JoinColumn(name = "marca_id")
-    private Marca marca;
-
-    @ManyToOne
-    @JoinColumn(name = "modelo_id")
-    private Modelo modelo;
-
-    @ManyToOne
-    @JoinColumn(name = "tipo_funda_id")
-    private TipoFunda tipoFundaObj;
-
-    @ManyToOne
-    @JoinColumn(name = "genero_id")
-    private Genero generoObj;
-
-    @Column(name = "categoria")
     private String categoria;
+    private Integer categoriaId;
 
-    @Column(name = "marca_celular")
     private String marcaCelular;
+    private Integer marcaId;
 
-    @Column(name = "modelo_celular")
     private String modeloCelular;
+    private Integer modeloId;
 
-    @Column(name = "tipo_funda")
     private String tipoFunda;
+    private Integer tipoFundaId;
 
-    @Column(name = "genero")
     private String genero;
+    private Integer generoId;
 
-    @Column(name = "descripcion")
     private String descripcion;
-
-    @Column(name = "imagen_url")
     private String imagenUrl;
 
-    @Column(name = "precio_venta")
     private BigDecimal precioVenta;
-
-    @Column(name = "proveedor")
     private String proveedor;
-
-    @Column(name = "precio_proveedor")
     private BigDecimal precioProveedor;
-
-    @Column(name = "precio_especial")
     private BigDecimal precioEspecial;
 
-    @Column(name = "codigo_barras", unique = true)
     private String codigoBarras;
-
-    @Column(name = "activo")
     private Boolean activo;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Categoria getCategoriaObj() {
-        return categoriaObj;
-    }
-
-    public void setCategoriaObj(Categoria categoriaObj) {
-        this.categoriaObj = categoriaObj;
-    }
-
-    public Marca getMarca() {
-        return marca;
-    }
-
-    public void setMarca(Marca marca) {
-        this.marca = marca;
-    }
-
-    public Modelo getModelo() {
-        return modelo;
-    }
-
-    public void setModelo(Modelo modelo) {
-        this.modelo = modelo;
-    }
-
-    public TipoFunda getTipoFundaObj() {
-        return tipoFundaObj;
-    }
-
-    public void setTipoFundaObj(TipoFunda tipoFundaObj) {
-        this.tipoFundaObj = tipoFundaObj;
-    }
-
-    public Genero getGeneroObj() {
-        return generoObj;
-    }
-
-    public void setGeneroObj(Genero generoObj) {
-        this.generoObj = generoObj;
-    }
+    private Integer sucursalId;
+    private Integer cantidadInicial;
 
     public String getCategoria() {
         return categoria;
@@ -124,6 +39,14 @@ public class Producto {
 
     public void setCategoria(String categoria) {
         this.categoria = categoria;
+    }
+
+    public Integer getCategoriaId() {
+        return categoriaId;
+    }
+
+    public void setCategoriaId(Integer categoriaId) {
+        this.categoriaId = categoriaId;
     }
 
     public String getMarcaCelular() {
@@ -134,12 +57,28 @@ public class Producto {
         this.marcaCelular = marcaCelular;
     }
 
+    public Integer getMarcaId() {
+        return marcaId;
+    }
+
+    public void setMarcaId(Integer marcaId) {
+        this.marcaId = marcaId;
+    }
+
     public String getModeloCelular() {
         return modeloCelular;
     }
 
     public void setModeloCelular(String modeloCelular) {
         this.modeloCelular = modeloCelular;
+    }
+
+    public Integer getModeloId() {
+        return modeloId;
+    }
+
+    public void setModeloId(Integer modeloId) {
+        this.modeloId = modeloId;
     }
 
     public String getTipoFunda() {
@@ -150,12 +89,28 @@ public class Producto {
         this.tipoFunda = tipoFunda;
     }
 
+    public Integer getTipoFundaId() {
+        return tipoFundaId;
+    }
+
+    public void setTipoFundaId(Integer tipoFundaId) {
+        this.tipoFundaId = tipoFundaId;
+    }
+
     public String getGenero() {
         return genero;
     }
 
     public void setGenero(String genero) {
         this.genero = genero;
+    }
+
+    public Integer getGeneroId() {
+        return generoId;
+    }
+
+    public void setGeneroId(Integer generoId) {
+        this.generoId = generoId;
     }
 
     public String getDescripcion() {
@@ -220,5 +175,21 @@ public class Producto {
 
     public void setActivo(Boolean activo) {
         this.activo = activo;
+    }
+
+    public Integer getSucursalId() {
+        return sucursalId;
+    }
+
+    public void setSucursalId(Integer sucursalId) {
+        this.sucursalId = sucursalId;
+    }
+
+    public Integer getCantidadInicial() {
+        return cantidadInicial;
+    }
+
+    public void setCantidadInicial(Integer cantidadInicial) {
+        this.cantidadInicial = cantidadInicial;
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.leoadmin.v1.dto.ProductoManualRequest;
 import com.leoadmin.v1.entity.Producto;
 import com.leoadmin.v1.repository.ProductoRepository;
 import com.leoadmin.v1.service.ProductoService;
@@ -45,5 +46,10 @@ public class ProductoController {
             @RequestParam("zipImagenes") MultipartFile zipImagenes) {
 
         return productoService.importarProductosDesdeArchivos(sucursalId, excel, zipImagenes);
+    }
+
+    @PostMapping("/productos/manual")
+    public String crearProductoManual(@RequestBody ProductoManualRequest request) {
+        return productoService.crearProductoManual(request);
     }
 }
