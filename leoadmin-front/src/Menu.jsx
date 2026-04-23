@@ -6,8 +6,10 @@ const opciones = [
   { key: "entrada", label: "Entrada" },
   { key: "ajuste", label: "Ajuste" },
   { key: "devolucion", label: "Devolución" },
+  { key: "prestamoExterno", label: "Préstamo Externo" },
   { key: "corte", label: "Corte" },
   { key: "empleados", label: "Empleados" },
+  { key: "catalogos", label: "Catálogos" },
 ];
 
 function Menu({ setPantalla }) {

@@ -13,6 +13,7 @@ import com.leoadmin.v1.entity.MovimientoInventario;
 import com.leoadmin.v1.entity.Producto;
 import com.leoadmin.v1.entity.Usuario;
 import com.leoadmin.v1.entity.Venta;
+import com.leoadmin.v1.enums.MetodoPagoVenta;
 import com.leoadmin.v1.enums.RolUsuario;
 import com.leoadmin.v1.repository.DetalleVentaRepository;
 import com.leoadmin.v1.repository.InventarioRepository;
@@ -65,6 +66,17 @@ public class DevolucionService {
             return "El número de empleado es obligatorio";
         }
 
+        MetodoPagoVenta metodoPago;
+        try {
+            metodoPago = MetodoPagoVenta.fromString(request.getMetodoPago());
+        } catch (Exception e) {
+            return "Método de pago inválido. Usa EFECTIVO o TRANSFERENCIA";
+        }
+
+        if (metodoPago == null) {
+            return "El método de pago es obligatorio";
+        }
+
         Integer numeroEmpleado;
         try {
             numeroEmpleado = Integer.valueOf(request.getNumeroEmpleado());
@@ -115,6 +127,7 @@ public class DevolucionService {
         ventaDevolucion.setFechaHora(LocalDateTime.now());
         ventaDevolucion.setTotal(subtotalNegativo);
         ventaDevolucion.setTipoOperacion("devolucion");
+        ventaDevolucion.setMetodoPago(metodoPago);
 
         Venta ventaGuardada = ventaRepository.save(ventaDevolucion);
 

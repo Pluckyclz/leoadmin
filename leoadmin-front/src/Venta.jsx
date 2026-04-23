@@ -4,6 +4,7 @@ import { inputStyle, buttonStyle } from "./styles";
 
 function Venta() {
     const [numeroEmpleado, setNumeroEmpleado] = useState("");
+    const [metodoPago, setMetodoPago] = useState("efectivo");
     const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
     const [codigoBarras, setCodigoBarras] = useState("");
     const [carrito, setCarrito] = useState([]);
@@ -121,6 +122,7 @@ function Venta() {
         const body = {
             numeroEmpleado: Number(numeroEmpleado),
             tipoVenta,
+            metodoPago,
             productos: carrito.map((item) => ({
                 codigoBarras: item.codigoBarras,
                 cantidad: item.cantidad,
@@ -147,6 +149,7 @@ function Venta() {
             setCarrito([]);
             setCodigoBarras("");
             setNumeroEmpleado("");
+            setMetodoPago("efectivo");
             setMostrarConfirmacion(false);
             inputCodigoRef.current?.focus();
         } catch (error) {
@@ -349,6 +352,19 @@ function Venta() {
                             autoFocus
                         />
 
+                        <label style={{ ...labelStyle, textAlign: "center", marginTop: "12px" }}>
+                            Método de pago:
+                        </label>
+
+                        <select
+                            value={metodoPago}
+                            onChange={(e) => setMetodoPago(e.target.value)}
+                            style={selectStyle}
+                        >
+                            <option value="efectivo">Efectivo</option>
+                            <option value="transferencia">Transferencia</option>
+                        </select>
+
                         <div
                             style={{
                                 display: "flex",
@@ -374,6 +390,7 @@ function Venta() {
                                 onClick={() => {
                                     setMostrarConfirmacion(false);
                                     setNumeroEmpleado("");
+                                    setMetodoPago("efectivo");
                                 }}
                                 style={{
                                     ...buttonStyle,

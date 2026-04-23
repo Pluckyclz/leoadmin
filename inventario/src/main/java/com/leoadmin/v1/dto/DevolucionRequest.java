@@ -1,6 +1,5 @@
 package com.leoadmin.v1.dto;
 
-
 public class DevolucionRequest {
 
     private String codigoBarras;
@@ -8,6 +7,7 @@ public class DevolucionRequest {
     private Integer cantidad;
     private String numeroEmpleado;
     private String motivo;
+    private String metodoPago;
 
     public String getCodigoBarras() {
         return codigoBarras;
@@ -47,5 +47,13 @@ public class DevolucionRequest {
 
     public void setMotivo(String motivo) {
         this.motivo = motivo;
+    }
+
+    public String getMetodoPago() {
+        return metodoPago;
+    }
+
+    public void setMetodoPago(String metodoPago) {
+        this.metodoPago = metodoPago;
     }
 }

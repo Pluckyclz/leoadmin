@@ -15,6 +15,7 @@ import com.leoadmin.v1.entity.MovimientoInventario;
 import com.leoadmin.v1.entity.Producto;
 import com.leoadmin.v1.entity.Usuario;
 import com.leoadmin.v1.entity.Venta;
+import com.leoadmin.v1.enums.MetodoPagoVenta;
 import com.leoadmin.v1.repository.DetalleVentaRepository;
 import com.leoadmin.v1.repository.InventarioRepository;
 import com.leoadmin.v1.repository.MovimientoInventarioRepository;
@@ -56,16 +57,39 @@ public class VentaService {
     @Transactional
     public VentaResponse procesarVenta(VentaRequest request, HttpServletRequest httpRequest) {
 
-        VentaResponse error = new VentaResponse();
-
         Local local = localService.obtenerLocalDesdeRequest(httpRequest);
 
         if (local == null) {
+            VentaResponse error = new VentaResponse();
             error.setMensaje("No se pudo identificar el local desde la IP");
             return error;
         }
 
-        Integer localId = local.getId();
+        return procesarVentaEnLocal(request, local.getId());
+    }
+
+    @Transactional
+    public VentaResponse procesarVentaEnLocal(VentaRequest request, Integer localId) {
+        return procesarVentaInterna(request, localId, true, true);
+    }
+
+    @Transactional
+    public VentaResponse procesarVentaDesdePrestamoExterno(VentaRequest request, Integer localId) {
+        return procesarVentaInterna(request, localId, false, false);
+    }
+
+    private VentaResponse procesarVentaInterna(
+            VentaRequest request,
+            Integer localId,
+            boolean validarInventario,
+            boolean descontarInventarioYMovimientos) {
+
+        VentaResponse error = new VentaResponse();
+
+        if (localId == null) {
+            error.setMensaje("La sucursal/local es obligatoria");
+            return error;
+        }
 
         if (request.getNumeroEmpleado() == null) {
             error.setMensaje("El número de empleado es obligatorio");
@@ -74,6 +98,19 @@ public class VentaService {
 
         if (request.getProductos() == null || request.getProductos().isEmpty()) {
             error.setMensaje("La venta debe incluir al menos un producto");
+            return error;
+        }
+
+        MetodoPagoVenta metodoPago;
+        try {
+            metodoPago = MetodoPagoVenta.fromString(request.getMetodoPago());
+        } catch (Exception e) {
+            error.setMensaje("Método de pago inválido. Usa EFECTIVO o TRANSFERENCIA");
+            return error;
+        }
+
+        if (metodoPago == null) {
+            error.setMensaje("El método de pago es obligatorio");
             return error;
         }
 
@@ -114,17 +151,19 @@ public class VentaService {
                 return error;
             }
 
-            var inventarioOpt = inventarioRepository
-                    .findByProductoIdAndSucursalId(producto.getId(), localId);
+            if (validarInventario) {
+                var inventarioOpt = inventarioRepository
+                        .findByProductoIdAndSucursalId(producto.getId(), localId);
 
-            if (inventarioOpt.isEmpty()) {
-                error.setMensaje("Inventario no encontrado para el producto: " + item.getCodigoBarras());
-                return error;
-            }
+                if (inventarioOpt.isEmpty()) {
+                    error.setMensaje("Inventario no encontrado para el producto: " + item.getCodigoBarras());
+                    return error;
+                }
 
-            if (inventarioOpt.get().getCantidad() < item.getCantidad()) {
-                error.setMensaje("Stock insuficiente para el producto: " + item.getCodigoBarras());
-                return error;
+                if (inventarioOpt.get().getCantidad() < item.getCantidad()) {
+                    error.setMensaje("Stock insuficiente para el producto: " + item.getCodigoBarras());
+                    return error;
+                }
             }
 
             BigDecimal precioUnitario;
@@ -147,6 +186,7 @@ public class VentaService {
         venta.setFechaHora(LocalDateTime.now());
         venta.setTotal(totalGeneral);
         venta.setTipoOperacion("venta");
+        venta.setMetodoPago(metodoPago);
 
         Venta ventaGuardada = ventaRepository.save(venta);
 
@@ -172,14 +212,17 @@ public class VentaService {
 
             BigDecimal subtotal = precioUnitario.multiply(BigDecimal.valueOf(item.getCantidad()));
 
-            int filasActualizadas = inventarioRepository.descontarStock(
-                    producto.getId(),
-                    localId,
-                    item.getCantidad());
+            if (descontarInventarioYMovimientos) {
+                int filasActualizadas = inventarioRepository.descontarStock(
+                        producto.getId(),
+                        localId,
+                        item.getCantidad());
 
-            if (filasActualizadas == 0) {
-                throw new RuntimeException(
-                        "Stock insuficiente o inventario modificado simultáneamente para: " + item.getCodigoBarras());
+                if (filasActualizadas == 0) {
+                    throw new RuntimeException(
+                            "Stock insuficiente o inventario modificado simultáneamente para: "
+                                    + item.getCodigoBarras());
+                }
             }
 
             DetalleVenta detalle = new DetalleVenta();
@@ -190,22 +233,25 @@ public class VentaService {
             detalle.setSubtotal(subtotal);
             detalleVentaRepository.save(detalle);
 
-            MovimientoInventario movimiento = new MovimientoInventario();
-            movimiento.setProductoId(producto.getId());
-            movimiento.setSucursalId(localId);
-            movimiento.setTipoMovimiento("venta");
-            movimiento.setCantidad(item.getCantidad() * -1);
-            movimiento.setFechaHora(LocalDateTime.now());
-            movimiento.setNumeroEmpleado(String.valueOf(request.getNumeroEmpleado()));
-            movimiento.setReferenciaId(ventaGuardada.getId());
-            movimiento.setObservacion("Venta múltiple desde service");
-            movimientoInventarioRepository.save(movimiento);
+            if (descontarInventarioYMovimientos) {
+                MovimientoInventario movimiento = new MovimientoInventario();
+                movimiento.setProductoId(producto.getId());
+                movimiento.setSucursalId(localId);
+                movimiento.setTipoMovimiento("venta");
+                movimiento.setCantidad(item.getCantidad() * -1);
+                movimiento.setFechaHora(LocalDateTime.now());
+                movimiento.setNumeroEmpleado(String.valueOf(request.getNumeroEmpleado()));
+                movimiento.setReferenciaId(ventaGuardada.getId());
+                movimiento.setObservacion("Venta múltiple desde service");
+                movimientoInventarioRepository.save(movimiento);
+            }
         }
 
         VentaResponse response = new VentaResponse();
         response.setVentaId(ventaGuardada.getId());
         response.setTotal(totalGeneral);
         response.setFechaHora(ventaGuardada.getFechaHora());
+        response.setMetodoPago(metodoPago.name());
         response.setMensaje("Venta registrada correctamente");
 
         return response;

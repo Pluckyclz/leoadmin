@@ -250,7 +250,13 @@ public class ProductoService {
         producto.setProveedor(request.getProveedor());
         producto.setPrecioProveedor(request.getPrecioProveedor());
         producto.setPrecioEspecial(request.getPrecioEspecial());
-        producto.setCodigoBarras(request.getCodigoBarras());
+
+        if (request.getCodigoBarras() != null && !request.getCodigoBarras().isBlank()) {
+            producto.setCodigoBarras(request.getCodigoBarras().trim());
+        } else {
+            producto.setCodigoBarras(generarCodigoBarras());
+        }
+
         producto.setActivo(request.getActivo() != null ? request.getActivo() : true);
 
         productoRepository.save(producto);
@@ -273,6 +279,58 @@ public class ProductoService {
         }
 
         return "Producto creado correctamente";
+    }
+
+    @Transactional
+    public String editarProductoManual(Integer id, ProductoManualRequest request) {
+
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        if (request.getCategoriaId() != null) {
+            Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
+                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+            producto.setCategoriaObj(categoria);
+            producto.setCategoria(categoria.getNombre());
+        }
+
+        if (request.getMarcaId() != null) {
+            Marca marca = marcaRepository.findById(request.getMarcaId())
+                    .orElseThrow(() -> new RuntimeException("Marca no encontrada"));
+            producto.setMarca(marca);
+            producto.setMarcaCelular(marca.getNombre());
+        }
+
+        if (request.getModeloId() != null) {
+            Modelo modelo = modeloRepository.findById(request.getModeloId())
+                    .orElseThrow(() -> new RuntimeException("Modelo no encontrado"));
+            producto.setModelo(modelo);
+            producto.setModeloCelular(modelo.getNombre());
+        }
+
+        if (request.getTipoFundaId() != null) {
+            TipoFunda tipo = tipoFundaRepository.findById(request.getTipoFundaId())
+                    .orElseThrow(() -> new RuntimeException("Tipo de funda no encontrado"));
+            producto.setTipoFundaObj(tipo);
+            producto.setTipoFunda(tipo.getNombre());
+        }
+
+        if (request.getGeneroId() != null) {
+            Genero genero = generoRepository.findById(request.getGeneroId())
+                    .orElseThrow(() -> new RuntimeException("Género no encontrado"));
+            producto.setGeneroObj(genero);
+            producto.setGenero(genero.getNombre());
+        }
+
+        producto.setDescripcion(request.getDescripcion());
+        producto.setPrecioVenta(request.getPrecioVenta());
+        producto.setProveedor(request.getProveedor());
+        producto.setPrecioProveedor(request.getPrecioProveedor());
+        producto.setPrecioEspecial(request.getPrecioEspecial());
+
+        productoRepository.save(producto);
+
+        return "Producto actualizado correctamente";
     }
 
     private boolean filaVacia(Row row, DataFormatter formatter) {

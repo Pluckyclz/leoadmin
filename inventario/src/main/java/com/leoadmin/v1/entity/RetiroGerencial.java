@@ -3,20 +3,16 @@ package com.leoadmin.v1.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.leoadmin.v1.enums.MetodoPagoVenta;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "venta")
-public class Venta {
+@Table(name = "retiro_gerencial")
+public class RetiroGerencial {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,15 +27,11 @@ public class Venta {
     @Column(name = "fecha_hora")
     private LocalDateTime fechaHora;
 
-    @Column(name = "total")
-    private BigDecimal total;
+    @Column(name = "monto")
+    private BigDecimal monto;
 
-    @Column(name = "tipo_operacion")
-    private String tipoOperacion;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "metodo_pago")
-    private MetodoPagoVenta metodoPago;
+    @Column(name = "observacion")
+    private String observacion;
 
     public Integer getId() {
         return id;
@@ -73,27 +65,19 @@ public class Venta {
         this.fechaHora = fechaHora;
     }
 
-    public BigDecimal getTotal() {
-        return total;
+    public BigDecimal getMonto() {
+        return monto;
     }
 
-    public void setTotal(BigDecimal total) {
-        this.total = total;
+    public void setMonto(BigDecimal monto) {
+        this.monto = monto;
     }
 
-    public String getTipoOperacion() {
-        return tipoOperacion;
+    public String getObservacion() {
+        return observacion;
     }
 
-    public void setTipoOperacion(String tipoOperacion) {
-        this.tipoOperacion = tipoOperacion;
-    }
-
-    public MetodoPagoVenta getMetodoPago() {
-        return metodoPago;
-    }
-
-    public void setMetodoPago(MetodoPagoVenta metodoPago) {
-        this.metodoPago = metodoPago;
+    public void setObservacion(String observacion) {
+        this.observacion = observacion;
     }
 }

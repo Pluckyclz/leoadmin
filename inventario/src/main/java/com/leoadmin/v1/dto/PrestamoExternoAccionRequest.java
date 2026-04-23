@@ -1,13 +1,11 @@
 package com.leoadmin.v1.dto;
 
-import java.util.List;
-
-public class VentaRequest {
+public class PrestamoExternoAccionRequest {
 
     private Integer numeroEmpleado;
-    private String tipoVenta;
+    private String codigoBarras;
     private String metodoPago;
-    private List<DetalleVentaRequest> productos;
+    private String observacion;
 
     public Integer getNumeroEmpleado() {
         return numeroEmpleado;
@@ -17,12 +15,12 @@ public class VentaRequest {
         this.numeroEmpleado = numeroEmpleado;
     }
 
-    public String getTipoVenta() {
-        return tipoVenta;
+    public String getCodigoBarras() {
+        return codigoBarras;
     }
 
-    public void setTipoVenta(String tipoVenta) {
-        this.tipoVenta = tipoVenta;
+    public void setCodigoBarras(String codigoBarras) {
+        this.codigoBarras = codigoBarras;
     }
 
     public String getMetodoPago() {
@@ -33,11 +31,11 @@ public class VentaRequest {
         this.metodoPago = metodoPago;
     }
 
-    public List<DetalleVentaRequest> getProductos() {
-        return productos;
+    public String getObservacion() {
+        return observacion;
     }
 
-    public void setProductos(List<DetalleVentaRequest> productos) {
-        this.productos = productos;
+    public void setObservacion(String observacion) {
+        this.observacion = observacion;
     }
 }

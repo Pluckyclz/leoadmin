@@ -8,6 +8,7 @@ public class VentaResponse {
     private Integer ventaId;
     private BigDecimal total;
     private LocalDateTime fechaHora;
+    private String metodoPago;
     private String mensaje;
 
     public Integer getVentaId() {
@@ -32,6 +33,14 @@ public class VentaResponse {
 
     public void setFechaHora(LocalDateTime fechaHora) {
         this.fechaHora = fechaHora;
+    }
+
+    public String getMetodoPago() {
+        return metodoPago;
+    }
+
+    public void setMetodoPago(String metodoPago) {
+        this.metodoPago = metodoPago;
     }
 
     public String getMensaje() {

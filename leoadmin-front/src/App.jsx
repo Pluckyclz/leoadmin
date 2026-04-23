@@ -4,10 +4,12 @@ import Inventario from "./Inventario";
 import EntradaInventario from "./EntradaInventario";
 import AjusteInventario from "./AjusteInventario";
 import Devolucion from "./Devolucion";
+import PrestamoExterno from "./PrestamoExterno";
 import Corte from "./Corte";
 import Menu from "./Menu";
 import TituloPantalla from "./TituloPantalla";
 import EmpleadosPage from "./EmpleadosPage";
+import CatalogosPage from "./CatalogosPage";
 import "./App.css";
 
 function App() {
@@ -25,8 +27,10 @@ function App() {
           {pantalla === "entrada" && <EntradaInventario />}
           {pantalla === "ajuste" && <AjusteInventario />}
           {pantalla === "devolucion" && <Devolucion />}
+          {pantalla === "prestamoExterno" && <PrestamoExterno />}
           {pantalla === "corte" && <Corte />}
           {pantalla === "empleados" && <EmpleadosPage />}
+          {pantalla === "catalogos" && <CatalogosPage />}
         </div>
       </div>
     </div>
