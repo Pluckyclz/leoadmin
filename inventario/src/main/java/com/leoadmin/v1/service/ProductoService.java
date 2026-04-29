@@ -90,6 +90,10 @@ public class ProductoService {
 
         Path tempZipPath = null;
 
+        int importados = 0;
+        int rechazados = 0;
+        StringBuilder errores = new StringBuilder();
+
         try {
             tempZipPath = Files.createTempFile("imagenes-productos-", ".zip");
             zipImagenes.transferTo(tempZipPath.toFile());
@@ -110,6 +114,7 @@ public class ProductoService {
 
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
+                    int numeroFila = i + 1;
 
                     if (row == null || filaVacia(row, formatter)) {
                         continue;
@@ -129,27 +134,97 @@ public class ProductoService {
                     Integer cantidad = getIntegerCell(row, 11, formatter);
 
                     if (descripcion == null || descripcion.isBlank()) {
-                        return "Descripción obligatoria en fila " + (i + 1);
+                        rechazados++;
+                        errores.append("Fila ").append(numeroFila).append(": descripción obligatoria.\n");
+                        continue;
                     }
 
                     if (precioVenta == null) {
-                        return "Precio de venta obligatorio en fila " + (i + 1);
+                        rechazados++;
+                        errores.append("Fila ").append(numeroFila)
+                                .append(": precio de venta obligatorio o inválido.\n");
+                        continue;
                     }
 
                     if (cantidad == null || cantidad < 0) {
-                        return "Cantidad inválida en fila " + (i + 1);
+                        rechazados++;
+                        errores.append("Fila ").append(numeroFila).append(": cantidad inválida.\n");
+                        continue;
+                    }
+
+                    Categoria categoriaObj = buscarCategoria(categoria);
+                    if (categoriaObj == null) {
+                        rechazados++;
+                        errores.append("Fila ").append(numeroFila)
+                                .append(": categoría no existe -> ")
+                                .append(valorSeguro(categoria))
+                                .append(".\n");
+                        continue;
+                    }
+
+                    Marca marcaObj = buscarMarca(marcaCelular);
+                    if (marcaObj == null) {
+                        rechazados++;
+                        errores.append("Fila ").append(numeroFila)
+                                .append(": marca no existe -> ")
+                                .append(valorSeguro(marcaCelular))
+                                .append(".\n");
+                        continue;
+                    }
+
+                    Modelo modeloObj = buscarModeloPorMarca(modeloCelular, marcaObj);
+                    if (modeloObj == null) {
+                        rechazados++;
+                        errores.append("Fila ").append(numeroFila)
+                                .append(": modelo no existe para la marca ")
+                                .append(marcaObj.getNombre())
+                                .append(" -> ")
+                                .append(valorSeguro(modeloCelular))
+                                .append(".\n");
+                        continue;
+                    }
+
+                    TipoFunda tipoFundaObj = buscarTipoFunda(tipoFunda);
+                    if (tipoFundaObj == null) {
+                        rechazados++;
+                        errores.append("Fila ").append(numeroFila)
+                                .append(": tipo de funda no existe -> ")
+                                .append(valorSeguro(tipoFunda))
+                                .append(".\n");
+                        continue;
+                    }
+
+                    Genero generoObj = buscarGenero(genero);
+                    if (generoObj == null) {
+                        rechazados++;
+                        errores.append("Fila ").append(numeroFila)
+                                .append(": género no existe -> ")
+                                .append(valorSeguro(genero))
+                                .append(".\n");
+                        continue;
                     }
 
                     String codigo = generarCodigoBarras();
 
                     Producto producto = new Producto();
                     producto.setCodigoBarras(codigo);
-                    producto.setDescripcion(descripcion);
-                    producto.setCategoria(categoria);
-                    producto.setMarcaCelular(marcaCelular);
-                    producto.setModeloCelular(modeloCelular);
-                    producto.setTipoFunda(tipoFunda);
-                    producto.setGenero(genero);
+                    producto.setDescripcion(descripcion.trim());
+
+                    producto.setCategoriaObj(categoriaObj);
+                    producto.setCategoria(categoriaObj.getNombre());
+
+                    producto.setMarca(marcaObj);
+                    producto.setMarcaCelular(marcaObj.getNombre());
+
+                    producto.setModelo(modeloObj);
+                    producto.setModeloCelular(modeloObj.getNombre());
+
+                    producto.setTipoFundaObj(tipoFundaObj);
+                    producto.setTipoFunda(tipoFundaObj.getNombre());
+
+                    producto.setGeneroObj(generoObj);
+                    producto.setGenero(generoObj.getNombre());
+
                     producto.setPrecioVenta(precioVenta);
                     producto.setPrecioProveedor(precioProveedor);
                     producto.setPrecioEspecial(precioEspecial);
@@ -159,7 +234,7 @@ public class ProductoService {
                     if (claveImagen != null && !claveImagen.isBlank()) {
                         String nombreFinalImagen = guardarImagenDesdeZip(
                                 zipFile,
-                                claveImagen,
+                                claveImagen.trim(),
                                 codigo,
                                 uploadDir);
 
@@ -170,15 +245,35 @@ public class ProductoService {
 
                     Producto productoGuardado = productoRepository.save(producto);
 
-                    Inventario inventario = new Inventario();
-                    inventario.setProductoId(productoGuardado.getId());
-                    inventario.setSucursalId(sucursalId);
-                    inventario.setCantidad(cantidad);
-                    inventarioRepository.save(inventario);
+                    Optional<Inventario> inventarioExistente = inventarioRepository
+                            .findByProductoIdAndSucursalId(productoGuardado.getId(), sucursalId);
+
+                    if (inventarioExistente.isPresent()) {
+                        Inventario inventario = inventarioExistente.get();
+                        inventario.setCantidad(inventario.getCantidad() + cantidad);
+                        inventarioRepository.save(inventario);
+                    } else {
+                        Inventario inventario = new Inventario();
+                        inventario.setProductoId(productoGuardado.getId());
+                        inventario.setSucursalId(sucursalId);
+                        inventario.setCantidad(cantidad);
+                        inventarioRepository.save(inventario);
+                    }
+
+                    importados++;
                 }
             }
 
-            return "Productos e inventario inicial cargados correctamente";
+            StringBuilder respuesta = new StringBuilder();
+            respuesta.append("Carga masiva finalizada. ");
+            respuesta.append("Importados: ").append(importados);
+            respuesta.append(" | Rechazados: ").append(rechazados);
+
+            if (errores.length() > 0) {
+                respuesta.append("\n\nErrores:\n").append(errores);
+            }
+
+            return respuesta.toString();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -331,6 +426,50 @@ public class ProductoService {
         productoRepository.save(producto);
 
         return "Producto actualizado correctamente";
+    }
+
+    private Categoria buscarCategoria(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            return null;
+        }
+
+        return categoriaRepository.findByNombreIgnoreCase(nombre.trim()).orElse(null);
+    }
+
+    private Marca buscarMarca(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            return null;
+        }
+
+        return marcaRepository.findByNombreIgnoreCase(nombre.trim()).orElse(null);
+    }
+
+    private Modelo buscarModeloPorMarca(String nombre, Marca marca) {
+        if (nombre == null || nombre.isBlank() || marca == null) {
+            return null;
+        }
+
+        return modeloRepository.findByNombreIgnoreCaseAndMarca(nombre.trim(), marca).orElse(null);
+    }
+
+    private TipoFunda buscarTipoFunda(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            return null;
+        }
+
+        return tipoFundaRepository.findByNombreIgnoreCase(nombre.trim()).orElse(null);
+    }
+
+    private Genero buscarGenero(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            return null;
+        }
+
+        return generoRepository.findByNombreIgnoreCase(nombre.trim()).orElse(null);
+    }
+
+    private String valorSeguro(String valor) {
+        return valor == null || valor.isBlank() ? "(vacío)" : valor.trim();
     }
 
     private boolean filaVacia(Row row, DataFormatter formatter) {

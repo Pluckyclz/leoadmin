@@ -66,17 +66,6 @@ public class DevolucionService {
             return "El número de empleado es obligatorio";
         }
 
-        MetodoPagoVenta metodoPago;
-        try {
-            metodoPago = MetodoPagoVenta.fromString(request.getMetodoPago());
-        } catch (Exception e) {
-            return "Método de pago inválido. Usa EFECTIVO o TRANSFERENCIA";
-        }
-
-        if (metodoPago == null) {
-            return "El método de pago es obligatorio";
-        }
-
         Integer numeroEmpleado;
         try {
             numeroEmpleado = Integer.valueOf(request.getNumeroEmpleado());
@@ -127,7 +116,10 @@ public class DevolucionService {
         ventaDevolucion.setFechaHora(LocalDateTime.now());
         ventaDevolucion.setTotal(subtotalNegativo);
         ventaDevolucion.setTipoOperacion("devolucion");
-        ventaDevolucion.setMetodoPago(metodoPago);
+
+        // La devolución no pide método de pago en pantalla.
+        // Se usa EFECTIVO internamente para que corte/caja pueda clasificarla.
+        ventaDevolucion.setMetodoPago(MetodoPagoVenta.EFECTIVO);
 
         Venta ventaGuardada = ventaRepository.save(ventaDevolucion);
 

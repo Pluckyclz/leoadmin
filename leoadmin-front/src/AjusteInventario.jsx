@@ -46,82 +46,144 @@ function AjusteInventario() {
   };
 
   return (
-    <div>
+    <div style={containerStyle}>
+      <div style={formCardStyle}>
+        <h2 style={titleStyle}>Ajuste de inventario</h2>
 
-      <div style={{ marginBottom: "10px" }}>
-        <label>Código de barras:</label>
-        <br />
-        <input
-          value={codigoBarras}
-          onChange={(e) => {
-            setCodigoBarras(e.target.value);
-            setMensaje("");
-          }}
-          style={inputStyle}
-        />
+        <div style={gridStyle}>
+          <div>
+            <label style={labelStyle}>Código de barras</label>
+            <input
+              value={codigoBarras}
+              onChange={(e) => {
+                setCodigoBarras(e.target.value);
+                setMensaje("");
+              }}
+              style={inputStyle}
+              placeholder="Ej. LEO00000001"
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Sucursal</label>
+            <input
+              value={sucursalId}
+              onChange={(e) => {
+                setSucursalId(e.target.value);
+                setMensaje("");
+              }}
+              style={inputStyle}
+              placeholder="Ej. 1"
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Nueva cantidad</label>
+            <input
+              type="number"
+              value={nuevaCantidad}
+              onChange={(e) => {
+                setNuevaCantidad(e.target.value);
+                setMensaje("");
+              }}
+              style={inputStyle}
+              placeholder="Ej. 10"
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Número de empleado</label>
+            <input
+              value={numeroEmpleado}
+              onChange={(e) => {
+                setNumeroEmpleado(e.target.value);
+                setMensaje("");
+              }}
+              style={inputStyle}
+              placeholder="Ej. 1001"
+            />
+          </div>
+
+          <div style={{ gridColumn: "1 / -1" }}>
+            <label style={labelStyle}>Motivo</label>
+            <textarea
+              value={motivo}
+              onChange={(e) => {
+                setMotivo(e.target.value);
+                setMensaje("");
+              }}
+              style={textAreaStyle}
+              placeholder="Opcional"
+            />
+          </div>
+        </div>
+
+        <div style={buttonContainerStyle}>
+          <button style={buttonStyle} onClick={registrarAjuste}>
+            Registrar ajuste
+          </button>
+        </div>
+
+        {mensaje && (
+          <p
+            style={{
+              ...messageStyle,
+              color: mensaje.includes("correctamente") ? "green" : "red",
+            }}
+          >
+            {mensaje}
+          </p>
+        )}
       </div>
-
-      <div style={{ marginBottom: "10px" }}>
-        <label>Sucursal:</label>
-        <br />
-        <input
-          value={sucursalId}
-          onChange={(e) => {
-            setSucursalId(e.target.value);
-            setMensaje("");
-          }}
-          style={inputStyle}
-        />
-      </div>
-
-      <div style={{ marginBottom: "10px" }}>
-        <label>Nueva cantidad:</label>
-        <br />
-        <input
-          value={nuevaCantidad}
-          onChange={(e) => {
-            setNuevaCantidad(e.target.value);
-            setMensaje("");
-          }}
-          style={inputStyle}
-        />
-      </div>
-
-      <div style={{ marginBottom: "10px" }}>
-        <label>Número de empleado:</label>
-        <br />
-        <input
-          value={numeroEmpleado}
-          onChange={(e) => {
-            setNumeroEmpleado(e.target.value);
-            setMensaje("");
-          }}
-          style={inputStyle}
-        />
-      </div>
-
-      <div style={{ marginBottom: "10px" }}>
-        <label>Motivo:</label>
-        <br />
-        <input
-          value={motivo}
-          onChange={(e) => {
-            setMotivo(e.target.value);
-            setMensaje("");
-          }}
-          style={inputStyle}
-        />
-      </div>
-
-      <button style={buttonStyle} onClick={registrarAjuste}>Registrar ajuste</button>
-
-      {mensaje && (
-        <p style={{ color: mensaje.includes("correctamente") ? "green" : "red", fontWeight: "bold" }}>
-          {mensaje}
-        </p>
-      )}
     </div>
   );
 }
+
+const containerStyle = {
+  maxWidth: "900px",
+  margin: "0 auto",
+  padding: "20px",
+};
+
+const formCardStyle = {
+  ...cardStyle,
+  padding: "24px",
+};
+
+const titleStyle = {
+  marginTop: 0,
+  marginBottom: "20px",
+  textAlign: "center",
+};
+
+const gridStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+  gap: "14px",
+};
+
+const labelStyle = {
+  display: "block",
+  fontWeight: "bold",
+  marginBottom: "6px",
+};
+
+const textAreaStyle = {
+  ...inputStyle,
+  minHeight: "80px",
+  resize: "vertical",
+};
+
+const buttonContainerStyle = {
+  display: "flex",
+  justifyContent: "center",
+  marginTop: "18px",
+};
+
+const messageStyle = {
+  textAlign: "center",
+  fontWeight: "bold",
+  marginTop: "16px",
+};
 
 export default AjusteInventario;
