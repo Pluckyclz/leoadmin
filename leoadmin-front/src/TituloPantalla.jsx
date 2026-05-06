@@ -6,6 +6,7 @@ function TituloPantalla({ pantalla }) {
     ajuste: "Ajuste de inventario",
     devolucion: "Devolución",
     prestamoExterno: "Préstamo Externo",
+    movimientos: "Movimientos",
     corte: "Corte",
     empleados: "Empleados",
     catalogos: "Catálogos",

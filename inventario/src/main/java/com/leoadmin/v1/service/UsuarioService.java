@@ -2,6 +2,8 @@ package com.leoadmin.v1.service;
 
 import org.springframework.stereotype.Service;
 
+import com.leoadmin.v1.dto.LoginRequest;
+import com.leoadmin.v1.dto.LoginResponse;
 import com.leoadmin.v1.dto.UsuarioRequest;
 import com.leoadmin.v1.entity.Usuario;
 import com.leoadmin.v1.enums.RolUsuario;
@@ -15,6 +17,54 @@ public class UsuarioService {
 
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        LoginResponse response = new LoginResponse();
+
+        if (request.getNumeroEmpleado() == null) {
+            response.setMensaje("El número de empleado es obligatorio");
+            return response;
+        }
+
+        Usuario usuario = usuarioRepository.findByNumeroEmpleado(request.getNumeroEmpleado()).orElse(null);
+
+        if (usuario == null) {
+            response.setMensaje("Empleado no encontrado");
+            return response;
+        }
+
+        if (!Boolean.TRUE.equals(usuario.getActivo())) {
+            response.setMensaje("Empleado inactivo");
+            return response;
+        }
+
+        if (usuario.getRol() == null) {
+            response.setMensaje("El empleado no tiene rol asignado");
+            return response;
+        }
+
+        if (usuario.getRol() != RolUsuario.EMPLEADO) {
+            if (request.getPassword() == null || request.getPassword().isBlank()) {
+                response.setMensaje("La contraseña es obligatoria");
+                return response;
+            }
+
+            if (usuario.getPassword() == null || !usuario.getPassword().equals(request.getPassword())) {
+                response.setMensaje("Contraseña incorrecta");
+                return response;
+            }
+        }
+
+        response.setId(usuario.getId());
+        response.setNumeroEmpleado(usuario.getNumeroEmpleado());
+        response.setNombreCompleto(usuario.getNombreCompleto());
+        response.setRol(usuario.getRol().name());
+        response.setZona(usuario.getZona() != null ? usuario.getZona().name() : null);
+        response.setRequiereLogin(usuario.getRequiereLogin());
+        response.setMensaje("Login correcto");
+
+        return response;
     }
 
     public String crearUsuario(UsuarioRequest request) {
@@ -117,16 +167,9 @@ public class UsuarioService {
             return "La zona es obligatoria";
         }
 
-        if (Boolean.TRUE.equals(request.getRequiereLogin())) {
-            if (usuarioIdActual == null) {
-                if (request.getPassword() == null || request.getPassword().isBlank()) {
-                    return "La contraseña es obligatoria para usuarios con acceso";
-                }
-            }
-        }
-
+        RolUsuario rol;
         try {
-            RolUsuario.fromString(request.getRol());
+            rol = RolUsuario.fromString(request.getRol());
         } catch (IllegalArgumentException e) {
             return "Rol no válido. Usa: SUPER_ADMIN, ADMIN, GERENTE, EMPLEADO";
         }
@@ -135,6 +178,14 @@ public class UsuarioService {
             ZonaUsuario.fromString(request.getZona());
         } catch (IllegalArgumentException e) {
             return "Zona no válida. Usa: SANTA_MARTHA o CHALCO";
+        }
+
+        if (rol != RolUsuario.EMPLEADO) {
+            if (usuarioIdActual == null) {
+                if (request.getPassword() == null || request.getPassword().isBlank()) {
+                    return "La contraseña es obligatoria para ADMIN, GERENTE y SUPER_ADMIN";
+                }
+            }
         }
 
         Usuario existente = usuarioRepository.findByNumeroEmpleado(request.getNumeroEmpleado()).orElse(null);

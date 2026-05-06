@@ -8,11 +8,11 @@ import {
   changeEmpleadoStatus,
 } from "./services/empleadosService";
 
-const ROLES_MOCK = [
-  { id: 1, nombre: "SUPER ADMIN" },
-  { id: 2, nombre: "ADMIN" },
-  { id: 3, nombre: "GERENTE" },
-  { id: 4, nombre: "EMPLEADO" },
+const ROLES = [
+  { label: "Super admin", value: "SUPER_ADMIN" },
+  { label: "Admin", value: "ADMIN" },
+  { label: "Gerente", value: "GERENTE" },
+  { label: "Empleado", value: "EMPLEADO" },
 ];
 
 export default function EmpleadosPage() {
@@ -20,12 +20,10 @@ export default function EmpleadosPage() {
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [empleadoEdit, setEmpleadoEdit] = useState(null);
-  const [roles, setRoles] = useState([]);
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    setRoles(ROLES_MOCK);
     loadEmpleados();
   }, []);
 
@@ -35,7 +33,7 @@ export default function EmpleadosPage() {
       const data = await getEmpleados();
       setEmpleados(data);
     } catch (err) {
-      console.error("Error al cargar empleados:", err);
+      console.error(err);
       setMensaje("Error al cargar empleados");
       setError(true);
     } finally {
@@ -80,7 +78,7 @@ export default function EmpleadosPage() {
       setEmpleadoEdit(null);
       await loadEmpleados();
     } catch (err) {
-      console.error("Error al guardar empleado:", err);
+      console.error(err);
       setMensaje(err.message || "Error al guardar empleado");
       setError(true);
     }
@@ -88,12 +86,15 @@ export default function EmpleadosPage() {
 
   async function handleToggleStatus(empleado) {
     try {
-      const respuesta = await changeEmpleadoStatus(empleado.id, !empleado.activo);
-      setMensaje(respuesta || "Estatus actualizado correctamente");
+      const respuesta = await changeEmpleadoStatus(
+        empleado.id,
+        !empleado.activo
+      );
+      setMensaje(respuesta);
       setError(false);
       await loadEmpleados();
     } catch (err) {
-      console.error("Error al cambiar estatus:", err);
+      console.error(err);
       setMensaje(err.message || "Error al cambiar estatus");
       setError(true);
     }
@@ -104,13 +105,7 @@ export default function EmpleadosPage() {
       <h1>Empleados</h1>
 
       {!openModal && mensaje && (
-        <p
-          style={{
-            color: error ? "red" : "green",
-            fontWeight: "bold",
-            marginTop: "10px",
-          }}
-        >
+        <p style={{ color: error ? "red" : "green", fontWeight: "bold" }}>
           {mensaje}
         </p>
       )}
@@ -132,7 +127,7 @@ export default function EmpleadosPage() {
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
         empleadoEdit={empleadoEdit}
-        roles={roles}
+        roles={ROLES}
         mensaje={mensaje}
         error={error}
       />

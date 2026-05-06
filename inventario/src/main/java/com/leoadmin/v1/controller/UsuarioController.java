@@ -6,6 +6,8 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.leoadmin.v1.dto.LoginRequest;
+import com.leoadmin.v1.dto.LoginResponse;
 import com.leoadmin.v1.dto.UsuarioRequest;
 import com.leoadmin.v1.entity.Usuario;
 import com.leoadmin.v1.repository.UsuarioRepository;
@@ -22,6 +24,17 @@ public class UsuarioController {
     public UsuarioController(UsuarioService usuarioService, UsuarioRepository usuarioRepository) {
         this.usuarioService = usuarioService;
         this.usuarioRepository = usuarioRepository;
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+        LoginResponse response = usuarioService.login(request);
+
+        if ("Login correcto".equalsIgnoreCase(response.getMensaje())) {
+            return ResponseEntity.ok(response);
+        }
+
+        return ResponseEntity.badRequest().body(response);
     }
 
     @PostMapping
